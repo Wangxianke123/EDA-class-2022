@@ -29,13 +29,12 @@ bool IsCapacitor(QString str);
 bool IsVoltageSource(QString str);
 bool IsEmpty(QString str);
 bool IsInductance(QString str);
-QString ReadNetlist(QString FileName);
+QString ReadNetlist(QString Netlist);
 QStringList ReadNetlistByLine(QString FineName);
 
-QString parse(QString FileName)
+QString parse(QString Netlist)
 {
-    //    QString strRead = ReadNetlist("test.sp");
-    QStringList list = FileName.split('\n');
+    QStringList list = Netlist.split('\n');
     if (list.size() == 0)
     {
         return "";
@@ -43,8 +42,8 @@ QString parse(QString FileName)
     //    qDebug() << strRead;
 
     circuit newCircuit;
-    QStringList ErrorInfo;
-    qDebug() << "Start parsing netlist ...";
+    QStringList ParsedInfo;
+    ParsedInfo << "#Start parsing netlist ...";
     for (int i = 0; i < list.size(); i++)
     {
         QString str = list[i];
@@ -62,66 +61,71 @@ QString parse(QString FileName)
         case IS_ANNOTATION:
         {
             newCircuit.getAnnotation(str);
-            qDebug() << "grep an annotation:" << str;
+            ParsedInfo << "#grep an annotation:" << str;
             break;
         }
         case IS_COMMAND:
         {
-            qDebug() << "grep a command:" << str;
+            ParsedInfo << "#grep a command:" << str;
             break;
         }
         case IS_RESISTOR:
         {
-            qDebug() << "grep a resistor:" << str;
+            ParsedInfo << "#grep a resistor:" << str;
             if (!newCircuit.AddResistor(str))
             {
-                qDebug() << "error: line " << i + 1 << ":Element already exsists! \'" << str << "\'";
+
                 QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
+                ParsedInfo << temp;
             }
             break;
         }
         case IS_CAPACITOR:
         {
-            qDebug() << "grep a capacitor:" << str;
+            qDebug() << "#grep a capacitor:" << str;
             if (!newCircuit.AddCapacitor(str))
             {
-                qDebug() << "error: line " << i + 1 << ":Element already exsists! \'" << str << "\'";
+
                 QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
+                ParsedInfo << temp;
             }
             break;
         }
         case IS_VOLTAGE_SOURCE:
         {
-            qDebug() << "grep a source:" << str;
+            ParsedInfo << "#grep a source:" << str;
             if (!newCircuit.AddVoltageSource(str))
             {
-                qDebug() << "error: line " << i + 1 << ":Element already exsists! \'" << str << "\'";
                 QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
+                ParsedInfo << temp;
             }
             break;
         }
         case IS_INDUCTANCE:
         {
-            qDebug() << "grep a inductance:" << str;
+            ParsedInfo << "#grep a inductance:" << str;
             if (!newCircuit.AddInductance(str))
             {
-                qDebug() << "error: line " << i + 1 << ":Element already exsists! \'" << str << "\'";
                 QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
+                ParsedInfo << temp;
             }
             break;
         }
         default:
-            qDebug() << "error: line " << i + 1 << ":fail to parse\'" << str << "\'";
             QString temp = "error: line " + QString("%1").arg(i + 1) + ":fail to parse\'" + str + "\'";
-            ErrorInfo << temp;
+            ParsedInfo << temp;
         }
     }
     QStringList ElementInfo = newCircuit.printElementInfo();
-    QStringList ParserResult = ElementInfo + ErrorInfo;
+    QStringList ParserResult = ParsedInfo + ElementInfo;
+
+    QFile file("transcript");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Text))
+    {
+        QTextStream out(&file);
+        out << ParserResult.join('\n');
+        file.close();
+    }
     return ParserResult.join('\n');
 }
 

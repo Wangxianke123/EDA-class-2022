@@ -26,8 +26,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     setWindowTitle(tr("MainWindow"));
 
+    splitterMainWindow = new QSplitter(Qt::Vertical, this);
     text = new QTextEdit(this);
-    setCentralWidget(text);
+    transcript = new QTextEdit(QStringLiteral("transcript"), this);
+    transcript->setReadOnly(true);
+    setCentralWidget(splitterMainWindow);
+
+    splitterMainWindow->addWidget(text);
+    splitterMainWindow->addWidget(transcript);
 
     createActions();
     createMenus();
@@ -87,25 +93,25 @@ void MainWindow::createActions()
     connect(pasteAction, SIGNAL(triggered()), text, SLOT(paste()));
 
     /** @brief demo1 to use QLabel to print Hello World*/
-    helloAction = new QAction(tr("hello world"), this);
-    helloAction->setToolTip(tr("use QLabel to print Hello World"));
-    connect(helloAction, SIGNAL(triggered()), this, SLOT(slotHelloWorld()));
+    // helloAction = new QAction(tr("hello world"), this);
+    // helloAction->setToolTip(tr("use QLabel to print Hello World"));
+    // connect(helloAction, SIGNAL(triggered()), this, SLOT(slotHelloWorld()));
 
-    regexpAction = new QAction(tr("Reg Exp"), this);
-    regexpAction->setToolTip(tr("regular expression demo"));
-    connect(regexpAction, SIGNAL(triggered()), this, SLOT(slotRegExp()));
+    // regexpAction = new QAction(tr("Reg Exp"), this);
+    // regexpAction->setToolTip(tr("regular expression demo"));
+    // connect(regexpAction, SIGNAL(triggered()), this, SLOT(slotRegExp()));
 
-    plotterAction = new QAction(tr("Plotter"), this);
-    plotterAction->setToolTip(tr("Qt Plotter demo"));
-    connect(plotterAction, SIGNAL(triggered()), this, SLOT(slotCallPlotter()));
+    // plotterAction = new QAction(tr("Plotter"), this);
+    // plotterAction->setToolTip(tr("Qt Plotter demo"));
+    // connect(plotterAction, SIGNAL(triggered()), this, SLOT(slotCallPlotter()));
 
-    cppTutorialAction = new QAction(tr("Cpp Tutorial"), this);
-    cppTutorialAction->setToolTip(tr("Cpp tutorial"));
-    connect(cppTutorialAction, SIGNAL(triggered()), this, SLOT(slotCppTutorial()));
+    /*     cppTutorialAction = new QAction(tr("Cpp Tutorial"), this);
+        cppTutorialAction->setToolTip(tr("Cpp tutorial"));
+        connect(cppTutorialAction, SIGNAL(triggered()), this, SLOT(slotCppTutorial())); */
 
-    matrixOperationsAction = new QAction(tr("Matrix Operations"), this);
-    matrixOperationsAction->setToolTip(tr("Matrix Operations"));
-    connect(matrixOperationsAction, SIGNAL(triggered()), this, SLOT(slotMatrixOperations()));
+    // matrixOperationsAction = new QAction(tr("Matrix Operations"), this);
+    // matrixOperationsAction->setToolTip(tr("Matrix Operations"));
+    // connect(matrixOperationsAction, SIGNAL(triggered()), this, SLOT(slotMatrixOperations()));
 
     parserAction = new QAction(tr("Parser"), this);
     parserAction->setToolTip(tr("Parser"));
@@ -131,23 +137,23 @@ void MainWindow::createToolBars()
 {
 
     /// You can use multiple toolbars. Actions are separated in the interface.
-    fileTool = addToolBar(tr("File"));
-    editTool = addToolBar(tr("Edit"));
+    // fileTool = addToolBar(tr("File"));
+    // editTool = addToolBar(tr("Edit"));
     demoTool = addToolBar(tr("demo"));
 
-    fileTool->addAction(fileNewAction);
-    fileTool->addAction(fileOpenAction);
-    fileTool->addAction(fileSaveAction);
+    // fileTool->addAction(fileNewAction);
+    // fileTool->addAction(fileOpenAction);
+    // fileTool->addAction(fileSaveAction);
 
-    editTool->addAction(copyAction);
-    editTool->addAction(cutAction);
-    editTool->addAction(pasteAction);
+    // editTool->addAction(copyAction);
+    // editTool->addAction(cutAction);
+    // editTool->addAction(pasteAction);
 
-    demoTool->addAction(helloAction);
-    demoTool->addAction(regexpAction);
-    demoTool->addAction(plotterAction);
-    demoTool->addAction(cppTutorialAction);
-    demoTool->addAction(matrixOperationsAction);
+    // demoTool->addAction(helloAction);
+    // demoTool->addAction(regexpAction);
+    // demoTool->addAction(plotterAction);
+    /*     demoTool->addAction(cppTutorialAction); */
+    // demoTool->addAction(matrixOperationsAction);
     demoTool->addAction(parserAction);
 }
 
@@ -167,16 +173,17 @@ void MainWindow::slotParser()
     QString netList = text->toPlainText();
 
     QString ParseResult = parse(netList);
-    QLabel *label = new QLabel();
-    label->setText(ParseResult);
-    /** @brief Detail settings for label.
-     * You can find more functions in ref web at the front of this file */
-    label->setAlignment(Qt::AlignLeft);
-    // label->setStyleSheet("QLabel{font:15px;color:red;background-color:rgb(f9,f9,"
-    //  "f9);}");
-    label->setStyleSheet("font:14px;color:black;");
-    label->resize(400, 300);
-    label->show(); // label should be shown to be seen.
+    // QLabel *label = new QLabel();
+    // label->setText(ParseResult);
+    // /** @brief Detail settings for label.
+    //  * You can find more functions in ref web at the front of this file */
+    // label->setAlignment(Qt::AlignLeft);
+    // // label->setStyleSheet("QLabel{font:15px;color:red;background-color:rgb(f9,f9,"
+    // //  "f9);}");
+    // label->setStyleSheet("font:14px;color:black;");
+    // label->resize(400, 300);
+    // label->show(); // label should be shown to be seen.
+    transcript->setPlainText(ParseResult);
 }
 /**
  * @brief Open action will open the saved files .
@@ -415,12 +422,12 @@ void MainWindow::slotHelloWorld()
  * @brief This is a demo for OOP feature of C++
  * @date 2022/08/12
  */
-void MainWindow::slotCppTutorial()
+/* void MainWindow::slotCppTutorial()
 {
     QString currPath = QDir::currentPath();
     qDebug() << "Current path is " << currPath << Qt::endl;
 
-    QString filename = currPath + "/src/cpp_tutorial/myWidget.cpp";
+    QString filename = currPath + "/cpp_tutorial/myWidget.cpp";
     QFile file(filename);
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -449,7 +456,7 @@ void MainWindow::slotCppTutorial()
     myWidget->setFixedSize(300, 200);
     myWidget->setWindowTitle("New Window");
     myWidget->show();
-}
+} */
 
 /**
  * @brief Matrix Operations

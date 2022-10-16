@@ -13,10 +13,15 @@
 #include <QMainWindow>
 #include <QString>
 #include <QDebug>
+#include <QTextDocument>
+#include <QSplitter>
+
 class QAction;
 class QMenu;
 class QToolBar;
 class QTextEdit;
+class QTextDocument;
+class QSplitter;
 class QWidget;
 class QTextStream;
 
@@ -56,15 +61,15 @@ public slots:
     // void slotCallPlotter();
 
     /** @brief slot of show C++ tutorial */
-    void slotCppTutorial();
+    // void slotCppTutorial();
 
     /** @brief slot of matrix operations demo*/
     // void slotMatrixOperations();
     void slotParser();
 
 private:
-    QMenu    *fileMenu;
-    QMenu    *editMenu;
+    QMenu *fileMenu;
+    QMenu *editMenu;
     QToolBar *fileTool;
     QToolBar *editTool;
 
@@ -77,16 +82,20 @@ private:
     QAction *copyAction;
     QAction *pasteAction;
 
-    QAction *helloAction;            // hello world demo
-    QAction *regexpAction;           // regular expression demo
-    QAction *plotterAction;          // qt plotter demo
-    QAction *cppTutorialAction;      // C++ tutorial
-    QAction *matrixOperationsAction; // matrix operations
-    QAction *parserAction;            //parser 
+    // QAction *helloAction;            // hello world demo
+    // QAction *regexpAction;           // regular expression demo
+    // QAction *plotterAction;          // qt plotter demo
+    // QAction *cppTutorialAction;      // C++ tutorial
+    // QAction *matrixOperationsAction; // matrix operations
+    QAction *parserAction; // parser
 
     QTextEdit *text;
 
     QString fileName = "./";
+
+    QTextEdit *transcript;
+
+    QSplitter *splitterMainWindow;
 };
 
 #endif // MAINWINDOW_H
