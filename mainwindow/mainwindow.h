@@ -15,6 +15,7 @@
 #include <QDebug>
 #include <QTextDocument>
 #include <QSplitter>
+#include "parser/circuit.h"
 
 class QAction;
 class QMenu;
@@ -96,6 +97,8 @@ private:
     QTextEdit *transcript;
 
     QSplitter *splitterMainWindow;
+
+    circuit *MainCircuit;
 };
 
 #endif // MAINWINDOW_H

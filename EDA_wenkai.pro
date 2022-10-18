@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = hw3
+TARGET = EDA_wenkai
 INCLUDEPATH += .
 
 QT += widgets
@@ -27,6 +27,6 @@ HEADERS +=  parser/circuit.h    \
             cpp_tutorial/myWidget.h
 
 SOURCES +=  main.cpp            \
-            parser/parser.cpp   \
+            parser/circuit.cpp   \
             mainwindow/mainwindow.cpp   \
             cpp_tutorial/myWidget.cpp

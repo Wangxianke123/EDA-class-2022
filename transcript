@@ -3,8 +3,6 @@
 * Try to find out all errors of the netlist.
 #grep a resistor:
 R1 node_1 node_2 1K
-error: line 4:fail to parse'R2 node_2 node_3'
-error: line 6:Element already exsists! 'C1 node_3 GND 1p'
 #grep a inductance:
 L1 node_3 GND 1m
 #grep a source:
@@ -23,9 +21,10 @@ Nodes:5
 Devices:3
 Resistor:1	Capacitor:1	Inductance:1
 Vsrc:1
-Name:R1		Value:1K		Node1: node_1		Node2: node_2
-Name:C1		Value:10p		Node1: node_2		Node2: node_3
-Name:L1		Value:1m		Node1: node_3		Node2: GND
+Name:R1		Value:1000		Node1: node_1		Node2: node_2
+Name:C1		Value:1e-11		Node1: node_2		Node2: node_3
+Name:L1		Value:0.001		Node1: node_3		Node2: GND
 Name:VIN		Value:5		Node1: gnd		Node2: node_1
-Parsing finished!
 -----------------------------------------------------
+error: line 4:fail to parse'R2 node_2 node_3'
+error: line 6:Element already exsists! 'C1 node_3 GND 1p'

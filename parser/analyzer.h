@@ -4,7 +4,8 @@
 #include <QRegExp>
 #include <QStringList>
 #include <QString>
-
+#include <QFile>
+#include <math.h>
 //  different return type of analyzer
 #define IS_TITLE 1
 #define IS_ANNOTATION 2
@@ -17,7 +18,6 @@
 
 #define FAIL_TO_ANALYZE 0
 
-// main function
 int analyze(QString str, int line);
 
 // function to analyze netlist by line
@@ -32,17 +32,18 @@ bool IsInductance(QString str);
 QString ReadNetlist(QString Netlist);
 QStringList ReadNetlistByLine(QString FineName);
 
-QString parse(QString Netlist)
+circuit *parse(QString Netlist)
 {
     QStringList list = Netlist.split('\n');
     if (list.size() == 0)
     {
-        return "";
+        return nullptr;
     }
     //    qDebug() << strRead;
 
-    circuit newCircuit;
+    circuit *newCircuit = new circuit;
     QStringList ParsedInfo;
+    QStringList ErrorInfo;
     ParsedInfo << "#Start parsing netlist ...";
     for (int i = 0; i < list.size(); i++)
     {
@@ -55,69 +56,70 @@ QString parse(QString Netlist)
         }
         case IS_TITLE:
         {
-            newCircuit.getTitle(str);
+            newCircuit->getTitle(str);
             break;
         }
         case IS_ANNOTATION:
         {
-            newCircuit.getAnnotation(str);
+            newCircuit->getAnnotation(str);
             ParsedInfo << "#grep an annotation:" << str;
             break;
         }
         case IS_COMMAND:
         {
             ParsedInfo << "#grep a command:" << str;
+            newCircuit->AddCommand(str);
             break;
         }
         case IS_RESISTOR:
         {
             ParsedInfo << "#grep a resistor:" << str;
-            if (!newCircuit.AddResistor(str))
+            if (!newCircuit->AddResistor(str))
             {
 
                 QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ParsedInfo << temp;
+                ErrorInfo << temp;
             }
             break;
         }
         case IS_CAPACITOR:
         {
             qDebug() << "#grep a capacitor:" << str;
-            if (!newCircuit.AddCapacitor(str))
+            if (!newCircuit->AddCapacitor(str))
             {
 
                 QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ParsedInfo << temp;
+                ErrorInfo << temp;
             }
             break;
         }
         case IS_VOLTAGE_SOURCE:
         {
             ParsedInfo << "#grep a source:" << str;
-            if (!newCircuit.AddVoltageSource(str))
+            if (!newCircuit->AddVoltageSource(str))
             {
                 QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ParsedInfo << temp;
+                ErrorInfo << temp;
             }
             break;
         }
         case IS_INDUCTANCE:
         {
             ParsedInfo << "#grep a inductance:" << str;
-            if (!newCircuit.AddInductance(str))
+            if (!newCircuit->AddInductance(str))
             {
                 QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ParsedInfo << temp;
+                ErrorInfo << temp;
             }
             break;
         }
         default:
             QString temp = "error: line " + QString("%1").arg(i + 1) + ":fail to parse\'" + str + "\'";
-            ParsedInfo << temp;
+            ErrorInfo << temp;
         }
     }
-    QStringList ElementInfo = newCircuit.printElementInfo();
-    QStringList ParserResult = ParsedInfo + ElementInfo;
+    QStringList ElementInfo = newCircuit->printElementInfo();
+    QStringList ParserResult = ParsedInfo + ElementInfo + ErrorInfo;
 
     QFile file("transcript");
     if (file.open(QIODevice::WriteOnly | QIODevice::Text))
@@ -126,7 +128,7 @@ QString parse(QString Netlist)
         out << ParserResult.join('\n');
         file.close();
     }
-    return ParserResult.join('\n');
+    return newCircuit;
 }
 
 QString ReadNetlist(QString FileName)

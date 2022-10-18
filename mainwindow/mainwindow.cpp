@@ -171,19 +171,31 @@ void MainWindow::slotNewFile()
 void MainWindow::slotParser()
 {
     QString netList = text->toPlainText();
-
-    QString ParseResult = parse(netList);
-    // QLabel *label = new QLabel();
-    // label->setText(ParseResult);
-    // /** @brief Detail settings for label.
-    //  * You can find more functions in ref web at the front of this file */
-    // label->setAlignment(Qt::AlignLeft);
-    // // label->setStyleSheet("QLabel{font:15px;color:red;background-color:rgb(f9,f9,"
-    // //  "f9);}");
-    // label->setStyleSheet("font:14px;color:black;");
-    // label->resize(400, 300);
-    // label->show(); // label should be shown to be seen.
-    transcript->setPlainText(ParseResult);
+    MainCircuit = parse(netList);
+    // transcript->setPlainText(ParseResult);
+    QFile file("transcript");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QMessageBox::warning(this, tr("Error"), tr("Failed to open transcript!"));
+        return;
+    }
+    else
+    {
+        if (!file.isReadable())
+        {
+            QMessageBox::warning(this, tr("Error"), tr("The transcript is unreadable"));
+        }
+        else
+        {
+            QTextStream textStream(&file); // Use QTextStream to load text.
+            while (!textStream.atEnd())
+            {
+                transcript->setPlainText(textStream.readAll());
+            }
+            transcript->show();
+            file.close();
+        }
+    }
 }
 /**
  * @brief Open action will open the saved files .
