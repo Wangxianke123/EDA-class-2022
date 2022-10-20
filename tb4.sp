@@ -1,14 +1,24 @@
-TestBench 4 for Parser
-* Try to find out all errors of the netlist.
-R1 node_1 node_2 1K
-R2 node_2 node_3
-C1 node_2 node_3 10p
-C1 node_3 GND 1p
-L1 node_3 GND 1m
+TestBench4 for Homework4
+* 2022 EDA course testbench netlist
+* 2022-10-17
+* Origin: From Qixu Xie's Small Signal Model - AC Test
 
-VIN gnd node_1 DC 5
+Vin in gnd  AC 1
+Cin in gnd 1p
 
-.DC V1 0 10 1
-.print V(node_1)
+*first stage
+Gm1 out1 gnd in gnd 160.6u
+R1 out1 gnd 0.75Meg
+C1 out1 gnd 619f
 
+*compensation capacitor
+Cc out1 out2 1p
+
+*second stage
+Gm2 out2 gnd out1 gnd 995u
+R2 out2 gnd 99.47K
+C2 out2 gnd 5p
+
+.AC DEC 10 1 1000Meg
+*.plot ac vdec(out2) vp(out2)
 .end

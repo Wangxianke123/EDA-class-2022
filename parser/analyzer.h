@@ -15,6 +15,11 @@
 #define IS_VOLTAGE_SOURCE 6
 #define IS_EMPTY 7
 #define IS_INDUCTANCE 8
+#define IS_CURRENT_SOURCE 9
+#define IS_VCCS 10
+#define IS_VCVS 11
+#define IS_CCCS 12
+#define IS_CCVS 13
 
 #define FAIL_TO_ANALYZE 0
 
@@ -27,11 +32,19 @@ bool IsCommand(QString str);
 bool IsResistor(QString str);
 bool IsCapacitor(QString str);
 bool IsVoltageSource(QString str);
+bool IsCurrentSource(QString str);
 bool IsEmpty(QString str);
 bool IsInductance(QString str);
+
+bool IsVCCS(QString str);
+bool IsVCVS(QString str);
+bool IsCCCS(QString str);
+bool IsCCVS(QString str);
+
 QString ReadNetlist(QString Netlist);
 QStringList ReadNetlistByLine(QString FineName);
-
+QStringList printMatrix(cx_mat A);
+QStringList printReal(cx_mat A);
 circuit *parse(QString Netlist)
 {
     QStringList list = Netlist.split('\n');
@@ -103,10 +116,62 @@ circuit *parse(QString Netlist)
             }
             break;
         }
+        case IS_CURRENT_SOURCE:
+        {
+            ParsedInfo << "#grep a source:" << str;
+            if (!newCircuit->AddCurrentSource(str))
+            {
+                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
+                ErrorInfo << temp;
+            }
+            break;
+        }
         case IS_INDUCTANCE:
         {
-            ParsedInfo << "#grep a inductance:" << str;
+            ParsedInfo << "#grep an inductance:" << str;
             if (!newCircuit->AddInductance(str))
+            {
+                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
+                ErrorInfo << temp;
+            }
+            break;
+        }
+        case IS_VCCS:
+        {
+            ParsedInfo << "#grep a VCCS:" << str;
+            if (!newCircuit->AddVCCS(str))
+            {
+                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
+                ErrorInfo << temp;
+            }
+            break;
+        }
+        case IS_VCVS:
+        {
+            ParsedInfo << "#grep a VCVS:" << str;
+            if (!newCircuit->AddVCVS(str))
+            {
+                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
+                ErrorInfo << temp;
+            }
+            break;
+        }
+        case IS_CCCS:
+        {
+            ParsedInfo << "#grep a CCCS:" << str;
+            QString next = list[i + 1];
+            if (!newCircuit->AddCCCS(str, next))
+            {
+                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
+                ErrorInfo << temp;
+            }
+            break;
+        }
+        case IS_CCVS:
+        {
+            ParsedInfo << "#grep a CCVS:" << str;
+            QString next = list[i + 1];
+            if (!newCircuit->AddCCVS(str, next))
             {
                 QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
                 ErrorInfo << temp;
@@ -190,8 +255,18 @@ int analyze(QString str, int line)
         return IS_CAPACITOR;
     else if (IsVoltageSource(str))
         return IS_VOLTAGE_SOURCE;
+    else if (IsCurrentSource(str))
+        return IS_CURRENT_SOURCE;
     else if (IsInductance(str))
         return IS_INDUCTANCE;
+    else if (IsVCVS(str))
+        return IS_VCVS;
+    else if (IsCCCS(str))
+        return IS_CCCS;
+    else if (IsVCCS(str))
+        return IS_VCCS;
+    else if (IsCCVS(str))
+        return IS_CCVS;
     else if (IsEmpty(str))
         return IS_EMPTY;
     else if (line == 0)
@@ -228,7 +303,7 @@ bool IsCommand(QString str)
 
 bool IsResistor(QString str)
 {
-    QRegExp Resistor("^[Rr]\\w*\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*[pPnNuUmMkK]?\\s*$");
+    QRegExp Resistor("^[Rr]\\w*\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
     //    qDebug()<<Resistor.isValid();
     int pos = 0;
     if ((pos = Resistor.indexIn(str, pos)) != -1)
@@ -255,7 +330,7 @@ bool IsCapacitor(QString str)
 
 bool IsVoltageSource(QString str)
 {
-    QRegExp Source("^[Vv]\\w*\\s+\\w+\\s+\\w+\\s+[AD]?C?\\s*\\d+(.|(e-))?\\d*[pPnNuUmMkK]?\\s*$");
+    QRegExp Source("^[Vv]\\w*\\s+\\w+\\s+\\w+\\s+[AaDd]?[Cc]?\\s*\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
     //    qDebug()<<Resistor.isValid();
     int pos = 0;
     if ((pos = Source.indexIn(str, pos)) != -1)
@@ -267,6 +342,19 @@ bool IsVoltageSource(QString str)
         return false;
 }
 
+bool IsCurrentSource(QString str)
+{
+    QRegExp Source("^[Ii]\\w*\\s+\\w+\\s+\\w+\\s+[AD]?C?\\s*\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
+    //    qDebug()<<Resistor.isValid();
+    int pos = 0;
+    if ((pos = Source.indexIn(str, pos)) != -1)
+    {
+        //        qDebug()<<"get a resistor:"<<str;
+        return true;
+    }
+    else
+        return false;
+}
 bool IsEmpty(QString str)
 {
     QRegExp Empty("^\\s*$");
@@ -295,4 +383,88 @@ bool IsInductance(QString str)
         return false;
 }
 
+bool IsVCCS(QString str) // G
+{
+    QRegExp Source("^[Gg]\\w*\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
+    int pos = 0;
+    if ((pos = Source.indexIn(str, pos)) != -1)
+    {
+        //        qDebug()<<"get a resistor:"<<str;
+        return true;
+    }
+    else
+        return false;
+}
+bool IsVCVS(QString str) // E
+{
+    QRegExp Source("^[Ee]\\w*\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
+    int pos = 0;
+    if ((pos = Source.indexIn(str, pos)) != -1)
+    {
+        //        qDebug()<<"get a resistor:"<<str;
+        return true;
+    }
+    else
+        return false;
+}
+bool IsCCCS(QString str) // F
+{
+    QRegExp Source("^[Ff]\\w*\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
+    int pos = 0;
+    if ((pos = Source.indexIn(str, pos)) != -1)
+    {
+        //        qDebug()<<"get a resistor:"<<str;
+        return true;
+    }
+    else
+        return false;
+}
+bool IsCCVS(QString str) // H
+{
+    QRegExp Source("^[Hh]\\w*\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
+    int pos = 0;
+    if ((pos = Source.indexIn(str, pos)) != -1)
+    {
+        //        qDebug()<<"get a resistor:"<<str;
+        return true;
+    }
+    else
+        return false;
+}
+
+QStringList printMatrix(cx_mat A)
+{
+    QStringList content;
+    for (long long unsigned int i = 0; i < A.n_rows; i++)
+    {
+        QString temp = "[";
+        for (long long unsigned int j = 0; j < A.n_cols; j++)
+        {
+            temp += "\t\t\'" + QString("%1 +").arg(A(i, j).real()) + QString("%1").arg(A(i, j).imag()) + "j\'";
+            if (j != A.n_cols - 1)
+                temp += ",\t\t";
+        }
+        temp += "]";
+        content << temp;
+    }
+    return content;
+}
+
+QStringList printReal(cx_mat A)
+{
+    QStringList content;
+    for (long long unsigned int i = 0; i < A.n_rows; i++)
+    {
+        QString temp = "[";
+        for (long long unsigned int j = 0; j < A.n_cols; j++)
+        {
+            temp += "\t\t\'" + QString("%1 ").arg(A(i, j).real()) + "\'";
+            if (j != A.n_cols - 1)
+                temp += ",\t\t";
+        }
+        temp += "]";
+        content << temp;
+    }
+    return content;
+}
 #endif

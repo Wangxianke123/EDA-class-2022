@@ -116,6 +116,10 @@ void MainWindow::createActions()
     parserAction = new QAction(tr("Parser"), this);
     parserAction->setToolTip(tr("Parser"));
     connect(parserAction, SIGNAL(triggered()), this, SLOT(slotParser()));
+
+    stampAction = new QAction(tr("Stamp"), this);
+    stampAction->setToolTip(tr("Stamp"));
+    connect(stampAction, SIGNAL(triggered()), this, SLOT(slotStamp()));
 }
 
 void MainWindow::createMenus()
@@ -155,6 +159,7 @@ void MainWindow::createToolBars()
     /*     demoTool->addAction(cppTutorialAction); */
     // demoTool->addAction(matrixOperationsAction);
     demoTool->addAction(parserAction);
+    demoTool->addAction(stampAction);
 }
 
 /**
@@ -320,6 +325,22 @@ void MainWindow::slotHelloWorld()
     label->show(); // label should be shown to be seen.
 }
 
+void MainWindow::slotStamp()
+{
+    QLabel *label = new QLabel();
+
+    QStringList content;
+    cx_mat A = MainCircuit->GenerateDcStamp(1000000000);
+    content << "Here is the stamp of circuit:";
+    content = content + printMatrix(A.submat(arma::span(0, A.n_rows - 1), arma::span(0, A.n_cols - 2)));
+    content << "RHS:";
+    content = content + printMatrix(A.submat(arma::span(0, A.n_rows - 1), arma::span(A.n_cols - 1, A.n_cols - 1)));
+    label->setText(content.join('\n'));
+
+    label->setAlignment(Qt::AlignCenter);
+    label->resize(400, 300);
+    label->show();
+}
 /**
  * @brief Demo to show regular expression in Qt
  * @author Limin Hao

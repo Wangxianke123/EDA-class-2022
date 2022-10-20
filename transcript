@@ -1,30 +1,53 @@
 #Start parsing netlist ...
 #grep an annotation:
-* Try to find out all errors of the netlist.
-#grep a resistor:
-R1 node_1 node_2 1K
-#grep a inductance:
-L1 node_3 GND 1m
+* 2022 EDA course testbench netlist
+#grep an annotation:
+* 2022-10-17
+#grep an annotation:
+* Origin: From Qixu Xie's Small Signal Model - AC Test
 #grep a source:
-VIN gnd node_1 DC 5
+Vin in gnd  AC 1
+#grep an annotation:
+*first stage
+#grep a VCCS:
+Gm1 out1 gnd in gnd 160.6u
+#grep a resistor:
+R1 out1 gnd 0.75Meg
+#grep an annotation:
+*compensation capacitor
+#grep an annotation:
+*second stage
+#grep a VCCS:
+Gm2 out2 gnd out1 gnd 995u
+#grep a resistor:
+R2 out2 gnd 99.47K
 #grep a command:
-.DC V1 0 10 1
-#grep a command:
-.print V(node_1)
+.AC DEC 10 1 1000Meg
+#grep an annotation:
+*.plot ac vdec(out2) vp(out2)
 #grep a command:
 .end
 Here's the result of parser:
 -----------------------------------------------------
 Title:
-TestBench 4 for Parser
-Nodes:5
-Devices:3
-Resistor:1	Capacitor:1	Inductance:1
+TestBench4 for Homework4
+Nodes:4
+Devices:6
+Resistor:2	Capacitor:4	Inductance:0
 Vsrc:1
-Name:R1		Value:1000		Node1: node_1		Node2: node_2
-Name:C1		Value:1e-11		Node1: node_2		Node2: node_3
-Name:L1		Value:0.001		Node1: node_3		Node2: GND
-Name:VIN		Value:5		Node1: gnd		Node2: node_1
+Controled src:2
+Name:Vin		Value:1		Node1: in		Node2: gnd
+Name:Cin		Value:1e-12		Node1: in		Node2: gnd
+Name:R1		Value:750000		Node1: out1		Node2: gnd
+Name:C1		Value:6.19e-13		Node1: out1		Node2: gnd
+Name:Cc		Value:1e-12		Node1: out1		Node2: out2
+Name:R2		Value:99470		Node1: out2		Node2: gnd
+Name:C2		Value:5e-12		Node1: out2		Node2: gnd
+Name:Gm1		Value:0.0001606		Node1: out1		Node2: gnd		Node3: in		Node4: gnd
+Name:Gm2		Value:0.000995		Node1: out2		Node2: gnd		Node3: out1		Node4: gnd
 -----------------------------------------------------
-error: line 4:fail to parse'R2 node_2 node_3'
-error: line 6:Element already exsists! 'C1 node_3 GND 1p'
+name:	 gnd	 row/col number in matrix:	2
+name:	 in	 row/col number in matrix:	1
+name:	 out1	 row/col number in matrix:	3
+name:	 out2	 row/col number in matrix:	4
+name:	I_Vin	 row/col number in matrix:	0

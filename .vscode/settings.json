@@ -56,6 +56,13 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "typeinfo": "cpp",
-        "variant": "cpp"
+        "variant": "cpp",
+        "qtwidgets": "cpp",
+        "cstring": "cpp",
+        "complex": "cpp",
+        "fstream": "cpp",
+        "future": "cpp",
+        "sstream": "cpp",
+        "cinttypes": "cpp"
     }
 }

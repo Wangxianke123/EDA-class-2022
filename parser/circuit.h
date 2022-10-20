@@ -7,6 +7,11 @@
 #include <QVector>
 #include <QDebug>
 #include <QQueue>
+#include <QMap>
+#include <armadillo>
+#include <math.h>
+
+using namespace arma;
 #define UNIT_Ff 100
 #define UNIT_Pp 101
 #define UNIT_Nn 102
@@ -30,18 +35,36 @@ struct TwoSideElement
     double value;
 };
 
+struct FourSideElement
+{
+    FourSideElement(char type, QString Name) : type(type), Name(Name){};
+    char type; // VCCS:G  VCVS:E  CCVS:H  CCCS:F
+    QString Name;
+    QString Controler;
+    QString Nodes[4];
+    QString ValueInString;
+    double value;
+};
+
 class circuit
 {
 public:
     QString CircuitTitle;
     QString CircuitAnnotation;
+    QMap<QString, int> MatrixOrder;
     QSet<QString> NodesName;
     QSet<QString> ResistorName;
     QSet<QString> CapacitorName;
     QSet<QString> InductanceName;
     QSet<QString> VSourceName;
+    QSet<QString> ISourceName;
+    QSet<QString> ControledName;
     QQueue<QString> CommandList;
+
     QVector<TwoSideElement> TwoSideElementList;
+
+    QVector<FourSideElement> FourSideElementList;
+
     int DeviceCounts;
 
     void getTitle(QString title);
@@ -51,13 +74,23 @@ public:
     bool AddCapacitor(QString Capacitor);
     bool AddInductance(QString Inductance);
     bool AddVoltageSource(QString VSource);
+    bool AddCurrentSource(QString ISource);
+    bool AddVCCS(QString Source);
+    bool AddVCVS(QString Source);
+    bool AddCCCS(QString Source, QString next);
+    bool AddCCVS(QString Source, QString next);
+
     void AddCommand(QString Command);
+
+    cx_mat GenerateDcStamp(double f);
+    cx_mat GenerateAcStamp(double f);
 
     QString printTitle();
     void printInfo();
     QString printAnnotation();
     QStringList printElementInfo();
     void printCommand();
+    QStringList printNodesInfo();
     void Update();
 
     circuit();

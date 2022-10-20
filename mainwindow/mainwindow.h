@@ -68,6 +68,8 @@ public slots:
     // void slotMatrixOperations();
     void slotParser();
 
+    void slotStamp();
+
 private:
     QMenu *fileMenu;
     QMenu *editMenu;
@@ -89,6 +91,8 @@ private:
     // QAction *cppTutorialAction;      // C++ tutorial
     // QAction *matrixOperationsAction; // matrix operations
     QAction *parserAction; // parser
+
+    QAction *stampAction;
 
     QTextEdit *text;
 
