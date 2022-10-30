@@ -1,11 +1,17 @@
 #ifndef ANALYZER_H
 #define ANALYZER_H
+
 #include <QDebug>
 #include <QRegExp>
 #include <QStringList>
 #include <QString>
 #include <QFile>
+#include <QChar>
 #include <math.h>
+#include <armadillo>
+#include"circuit.h"
+
+using namespace arma;
 //  different return type of analyzer
 #define IS_TITLE 1
 #define IS_ANNOTATION 2
@@ -23,10 +29,33 @@
 
 #define FAIL_TO_ANALYZE 0
 
-int analyze(QString str, int line);
 
-// function to analyze netlist by line
-// bool IsTitle(QString str);
+#define UNIT_Ff 100
+#define UNIT_Pp 101
+#define UNIT_Nn 102
+#define UNIT_Uu 103
+#define UNIT_Mm 104
+#define UNIT_Kk 105
+#define UNIT_MEG 106
+#define UNIT_Gg 107
+#define UNIT_Tt 108
+
+struct ACInFo{
+    //QString SourceName;
+    char sweep_type;
+    int  sweep_nums;
+    double start;
+    double stop;
+    ACInFo(
+    char sweep_type,
+    int  sweep_nums,
+    double start,
+    double stop) : sweep_type(sweep_type),sweep_nums(sweep_nums),start(start),stop(stop){};
+};
+
+int analyze(QString str, int line);
+circuit *parse(QString Netlist);
+
 bool IsAnnotation(QString str);
 bool IsCommand(QString str);
 bool IsResistor(QString str);
@@ -41,430 +70,13 @@ bool IsVCVS(QString str);
 bool IsCCCS(QString str);
 bool IsCCVS(QString str);
 
+int Unittype(QChar unitIn);
+double StringToNum(QString str);
 QString ReadNetlist(QString Netlist);
 QStringList ReadNetlistByLine(QString FineName);
 QStringList printMatrix(cx_mat A);
 QStringList printReal(cx_mat A);
-circuit *parse(QString Netlist)
-{
-    QStringList list = Netlist.split('\n');
-    if (list.size() == 0)
-    {
-        return nullptr;
-    }
-    //    qDebug() << strRead;
+struct ACInFo* ParseACInFo(QString str);
 
-    circuit *newCircuit = new circuit;
-    QStringList ParsedInfo;
-    QStringList ErrorInfo;
-    ParsedInfo << "#Start parsing netlist ...";
-    for (int i = 0; i < list.size(); i++)
-    {
-        QString str = list[i];
-        switch (analyze(str, i))
-        {
-        case IS_EMPTY:
-        {
-            break;
-        }
-        case IS_TITLE:
-        {
-            newCircuit->getTitle(str);
-            break;
-        }
-        case IS_ANNOTATION:
-        {
-            newCircuit->getAnnotation(str);
-            ParsedInfo << "#grep an annotation:" << str;
-            break;
-        }
-        case IS_COMMAND:
-        {
-            ParsedInfo << "#grep a command:" << str;
-            newCircuit->AddCommand(str);
-            break;
-        }
-        case IS_RESISTOR:
-        {
-            ParsedInfo << "#grep a resistor:" << str;
-            if (!newCircuit->AddResistor(str))
-            {
 
-                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
-            }
-            break;
-        }
-        case IS_CAPACITOR:
-        {
-            qDebug() << "#grep a capacitor:" << str;
-            if (!newCircuit->AddCapacitor(str))
-            {
-
-                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
-            }
-            break;
-        }
-        case IS_VOLTAGE_SOURCE:
-        {
-            ParsedInfo << "#grep a source:" << str;
-            if (!newCircuit->AddVoltageSource(str))
-            {
-                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
-            }
-            break;
-        }
-        case IS_CURRENT_SOURCE:
-        {
-            ParsedInfo << "#grep a source:" << str;
-            if (!newCircuit->AddCurrentSource(str))
-            {
-                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
-            }
-            break;
-        }
-        case IS_INDUCTANCE:
-        {
-            ParsedInfo << "#grep an inductance:" << str;
-            if (!newCircuit->AddInductance(str))
-            {
-                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
-            }
-            break;
-        }
-        case IS_VCCS:
-        {
-            ParsedInfo << "#grep a VCCS:" << str;
-            if (!newCircuit->AddVCCS(str))
-            {
-                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
-            }
-            break;
-        }
-        case IS_VCVS:
-        {
-            ParsedInfo << "#grep a VCVS:" << str;
-            if (!newCircuit->AddVCVS(str))
-            {
-                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
-            }
-            break;
-        }
-        case IS_CCCS:
-        {
-            ParsedInfo << "#grep a CCCS:" << str;
-            QString next = list[i + 1];
-            if (!newCircuit->AddCCCS(str, next))
-            {
-                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
-            }
-            break;
-        }
-        case IS_CCVS:
-        {
-            ParsedInfo << "#grep a CCVS:" << str;
-            QString next = list[i + 1];
-            if (!newCircuit->AddCCVS(str, next))
-            {
-                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
-                ErrorInfo << temp;
-            }
-            break;
-        }
-        default:
-            QString temp = "error: line " + QString("%1").arg(i + 1) + ":fail to parse\'" + str + "\'";
-            ErrorInfo << temp;
-        }
-    }
-    QStringList ElementInfo = newCircuit->printElementInfo();
-    QStringList ParserResult = ParsedInfo + ElementInfo + ErrorInfo;
-
-    QFile file("transcript");
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text))
-    {
-        QTextStream out(&file);
-        out << ParserResult.join('\n');
-        file.close();
-    }
-    return newCircuit;
-}
-
-QString ReadNetlist(QString FileName)
-{
-    QFile file(FileName);
-    QString str;
-    // Open netlist
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        qDebug() << "error:   Fail to open file:" << file.fileName() << "\n";
-        return str;
-    }
-    else
-    {
-        qDebug() << "Open file:  " << file.fileName() << "  success!";
-    }
-    QTextStream in(&file);
-
-    // Read All content of Netlist;
-    str = in.readAll();
-    file.close();
-    return str;
-}
-
-QStringList ReadNetlistByLine(QString FileName)
-{
-    QFile file(FileName);
-    QStringList list;
-    // Open netlist
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        qDebug() << "Fail to open file:" << file.fileName() << "!\n";
-        return list;
-    }
-    else
-    {
-        qDebug() << "Reading netlist:  " << file.fileName() << "   success!";
-    }
-    QTextStream in(&file);
-    // Read Netlist by line
-    while (!in.atEnd())
-    {
-        QString str = in.readLine();
-        list << str;
-    }
-    file.close();
-    return list;
-}
-
-int analyze(QString str, int line)
-{
-    if (IsAnnotation(str))
-        return IS_ANNOTATION;
-    else if (IsCommand(str))
-        return IS_COMMAND;
-    else if (IsResistor(str))
-        return IS_RESISTOR;
-    else if (IsCapacitor(str))
-        return IS_CAPACITOR;
-    else if (IsVoltageSource(str))
-        return IS_VOLTAGE_SOURCE;
-    else if (IsCurrentSource(str))
-        return IS_CURRENT_SOURCE;
-    else if (IsInductance(str))
-        return IS_INDUCTANCE;
-    else if (IsVCVS(str))
-        return IS_VCVS;
-    else if (IsCCCS(str))
-        return IS_CCCS;
-    else if (IsVCCS(str))
-        return IS_VCCS;
-    else if (IsCCVS(str))
-        return IS_CCVS;
-    else if (IsEmpty(str))
-        return IS_EMPTY;
-    else if (line == 0)
-        return IS_TITLE;
-    else
-        return FAIL_TO_ANALYZE;
-}
-
-bool IsAnnotation(QString str)
-{
-    QRegExp Annotation("^[*].*");
-    int pos = 0;
-    if ((pos = Annotation.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get an annotation:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-
-bool IsCommand(QString str)
-{
-    QRegExp Annotation("^[.].*");
-    int pos = 0;
-    if ((pos = Annotation.indexIn(str, pos)) != -1)
-    {
-        //       qDebug()<<"get command:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-
-bool IsResistor(QString str)
-{
-    QRegExp Resistor("^[Rr]\\w*\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
-    //    qDebug()<<Resistor.isValid();
-    int pos = 0;
-    if ((pos = Resistor.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get a resistor:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-bool IsCapacitor(QString str)
-{
-    QRegExp Capacitor("^[Cc]\\w*\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*[pPnNuUmMkK]?\\s*$");
-    //    qDebug()<<Resistor.isValid();
-    int pos = 0;
-    if ((pos = Capacitor.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get a resistor:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-
-bool IsVoltageSource(QString str)
-{
-    QRegExp Source("^[Vv]\\w*\\s+\\w+\\s+\\w+\\s+[AaDd]?[Cc]?\\s*\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
-    //    qDebug()<<Resistor.isValid();
-    int pos = 0;
-    if ((pos = Source.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get a resistor:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-
-bool IsCurrentSource(QString str)
-{
-    QRegExp Source("^[Ii]\\w*\\s+\\w+\\s+\\w+\\s+[AD]?C?\\s*\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
-    //    qDebug()<<Resistor.isValid();
-    int pos = 0;
-    if ((pos = Source.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get a resistor:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-bool IsEmpty(QString str)
-{
-    QRegExp Empty("^\\s*$");
-    //    qDebug()<<Resistor.isValid();
-    int pos = 0;
-    if ((pos = Empty.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get a resistor:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-
-bool IsInductance(QString str)
-{
-    QRegExp Inductance("^[Ll]\\w*\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*[pPnNuUmMkK]?\\s*$");
-    //    qDebug()<<Resistor.isValid();
-    int pos = 0;
-    if ((pos = Inductance.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get a resistor:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-
-bool IsVCCS(QString str) // G
-{
-    QRegExp Source("^[Gg]\\w*\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
-    int pos = 0;
-    if ((pos = Source.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get a resistor:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-bool IsVCVS(QString str) // E
-{
-    QRegExp Source("^[Ee]\\w*\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
-    int pos = 0;
-    if ((pos = Source.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get a resistor:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-bool IsCCCS(QString str) // F
-{
-    QRegExp Source("^[Ff]\\w*\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
-    int pos = 0;
-    if ((pos = Source.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get a resistor:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-bool IsCCVS(QString str) // H
-{
-    QRegExp Source("^[Hh]\\w*\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\w+\\s+\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
-    int pos = 0;
-    if ((pos = Source.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get a resistor:"<<str;
-        return true;
-    }
-    else
-        return false;
-}
-
-QStringList printMatrix(cx_mat A)
-{
-    QStringList content;
-    for (long long unsigned int i = 0; i < A.n_rows; i++)
-    {
-        QString temp = "[";
-        for (long long unsigned int j = 0; j < A.n_cols; j++)
-        {
-            temp += "\t\t\'" + QString("%1 +").arg(A(i, j).real()) + QString("%1").arg(A(i, j).imag()) + "j\'";
-            if (j != A.n_cols - 1)
-                temp += ",\t\t";
-        }
-        temp += "]";
-        content << temp;
-    }
-    return content;
-}
-
-QStringList printReal(cx_mat A)
-{
-    QStringList content;
-    for (long long unsigned int i = 0; i < A.n_rows; i++)
-    {
-        QString temp = "[";
-        for (long long unsigned int j = 0; j < A.n_cols; j++)
-        {
-            temp += "\t\t\'" + QString("%1 ").arg(A(i, j).real()) + "\'";
-            if (j != A.n_cols - 1)
-                temp += ",\t\t";
-        }
-        temp += "]";
-        content << temp;
-    }
-    return content;
-}
 #endif

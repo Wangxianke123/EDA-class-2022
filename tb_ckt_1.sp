@@ -1,12 +1,16 @@
-TestBench1 for Homework4
-* 2022 EDA course testbench netlist
-* 2022-10-17
+TA-session-5-ckt-1
+* TestBench 1 for Homework 5, 2022 EDA course.
+* Author    : Hao Limin
+* Date      : 2022/10/25
+* Info      : RES lade.
 
-Vin 1 0 3
-R1 1 2 200
-C1 1 2 20p
-R2 2 0 100
-L1 2 0 10m
+R03 0 3 3k
+R23 2 3 1k
+R02 0 2 2k
+R12 1 2 1k
+R01 0 1 2k
+Vin 3 0 DC 5
 
-.DC Vin 1 2 0.1
+.DC Vin 5 15 0.5
+.plot DC v(1)
 .end

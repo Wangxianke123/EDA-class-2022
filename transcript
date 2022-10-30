@@ -1,53 +1,45 @@
 #Start parsing netlist ...
 #grep an annotation:
-* 2022 EDA course testbench netlist
+* TestBench 2 for Homework 5, 2022 EDA course.
 #grep an annotation:
-* 2022-10-17
+* Author    : Hao Limin
 #grep an annotation:
-* Origin: From Qixu Xie's Small Signal Model - AC Test
+* Date      : 2022/10/25.
+#grep an annotation:
+* Info      : RLC filter.
+#grep a resistor:
+R1 1 0 1k
+#grep a resistor:
+R2 3 2 1
+#grep an inductance:
+L1 4 3 100u
 #grep a source:
-Vin in gnd  AC 1
-#grep an annotation:
-*first stage
-#grep a VCCS:
-Gm1 out1 gnd in gnd 160.6u
-#grep a resistor:
-R1 out1 gnd 0.75Meg
-#grep an annotation:
-*compensation capacitor
-#grep an annotation:
-*second stage
-#grep a VCCS:
-Gm2 out2 gnd out1 gnd 995u
-#grep a resistor:
-R2 out2 gnd 99.47K
+V1 4 0 AC 1
 #grep a command:
-.AC DEC 10 1 1000Meg
-#grep an annotation:
-*.plot ac vdec(out2) vp(out2)
+.AC DEC 10 1 100MEG
+#grep a command:
+.plot AC vm(1)
 #grep a command:
 .end
 Here's the result of parser:
 -----------------------------------------------------
 Title:
-TestBench4 for Homework4
-Nodes:4
-Devices:6
-Resistor:2	Capacitor:4	Inductance:0
+TA-session-5-ckt-2
+Nodes:5
+Devices:4
+Resistor:2	Capacitor:1	Inductance:1
 Vsrc:1
-Controled src:2
-Name:Vin		Value:1		Node1: in		Node2: gnd
-Name:Cin		Value:1e-12		Node1: in		Node2: gnd
-Name:R1		Value:750000		Node1: out1		Node2: gnd
-Name:C1		Value:6.19e-13		Node1: out1		Node2: gnd
-Name:Cc		Value:1e-12		Node1: out1		Node2: out2
-Name:R2		Value:99470		Node1: out2		Node2: gnd
-Name:C2		Value:5e-12		Node1: out2		Node2: gnd
-Name:Gm1		Value:0.0001606		Node1: out1		Node2: gnd		Node3: in		Node4: gnd
-Name:Gm2		Value:0.000995		Node1: out2		Node2: gnd		Node3: out1		Node4: gnd
+Controled src:0
+Name:R1		Value:1000		Node1:1		Node2:0
+Name:C1		Value:0.0001		Node1:2		Node2:1
+Name:R2		Value:1		Node1:3		Node2:2
+Name:L1		Value:0.0001		Node1:4		Node2:3
+Name:V1		Value:1		Node1:4		Node2:0
 -----------------------------------------------------
-name:	 gnd	 row/col number in matrix:	2
-name:	 in	 row/col number in matrix:	1
-name:	 out1	 row/col number in matrix:	3
-name:	 out2	 row/col number in matrix:	4
-name:	I_Vin	 row/col number in matrix:	0
+name:	0	 row/col number in matrix:	1
+name:	1	 row/col number in matrix:	0
+name:	2	 row/col number in matrix:	2
+name:	3	 row/col number in matrix:	3
+name:	4	 row/col number in matrix:	5
+name:	I_L1	 row/col number in matrix:	4
+name:	I_V1	 row/col number in matrix:	6

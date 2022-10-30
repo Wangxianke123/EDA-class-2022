@@ -6,7 +6,8 @@ TEMPLATE = app
 TARGET = EDA_wenkai
 INCLUDEPATH += .
 
-QT += widgets
+LIBS += -larmadillo
+QT += widgets printsupport
 # You can make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
 # Please consult the documentation of the deprecated API in order to know
@@ -24,9 +25,15 @@ UI_DIR      = build
 HEADERS +=  parser/circuit.h    \
             parser/analyzer.h  \
             mainwindow/mainwindow.h \
-            cpp_tutorial/myWidget.h
+            cpp_tutorial/myWidget.h \
+            solver/solver.h \
+            plotter/qcustomplot.h
 
 SOURCES +=  main.cpp            \
             parser/circuit.cpp   \
+             parser/analyzer.cpp  \
             mainwindow/mainwindow.cpp   \
-            cpp_tutorial/myWidget.cpp
+            cpp_tutorial/myWidget.cpp   \
+            solver/solver.cpp   \
+            plotter/qcustomplot.cpp
+

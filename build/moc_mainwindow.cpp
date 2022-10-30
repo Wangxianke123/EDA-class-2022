@@ -23,7 +23,7 @@ QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_MainWindow_t {
     QByteArrayData data[8];
-    char stringdata0[86];
+    char stringdata0[80];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -37,14 +37,14 @@ QT_MOC_LITERAL(1, 11, 11), // "slotNewFile"
 QT_MOC_LITERAL(2, 23, 0), // ""
 QT_MOC_LITERAL(3, 24, 12), // "slotOpenFile"
 QT_MOC_LITERAL(4, 37, 12), // "slotSaveFile"
-QT_MOC_LITERAL(5, 50, 14), // "slotHelloWorld"
-QT_MOC_LITERAL(6, 65, 10), // "slotParser"
-QT_MOC_LITERAL(7, 76, 9) // "slotStamp"
+QT_MOC_LITERAL(5, 50, 10), // "slotParser"
+QT_MOC_LITERAL(6, 61, 9), // "slotStamp"
+QT_MOC_LITERAL(7, 71, 8) // "slotPlot"
 
     },
     "MainWindow\0slotNewFile\0\0slotOpenFile\0"
-    "slotSaveFile\0slotHelloWorld\0slotParser\0"
-    "slotStamp"
+    "slotSaveFile\0slotParser\0slotStamp\0"
+    "slotPlot"
 };
 #undef QT_MOC_LITERAL
 
@@ -89,9 +89,9 @@ void MainWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 0: _t->slotNewFile(); break;
         case 1: _t->slotOpenFile(); break;
         case 2: _t->slotSaveFile(); break;
-        case 3: _t->slotHelloWorld(); break;
-        case 4: _t->slotParser(); break;
-        case 5: _t->slotStamp(); break;
+        case 3: _t->slotParser(); break;
+        case 4: _t->slotStamp(); break;
+        case 5: _t->slotPlot(); break;
         default: ;
         }
     }

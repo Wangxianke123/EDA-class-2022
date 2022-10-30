@@ -8,22 +8,17 @@
 #include <QDebug>
 #include <QQueue>
 #include <QMap>
+#include <QRegExp>
 #include <armadillo>
 #include <math.h>
+#include"solver/solver.h"
+
 
 using namespace arma;
-#define UNIT_Ff 100
-#define UNIT_Pp 101
-#define UNIT_Nn 102
-#define UNIT_Uu 103
-#define UNIT_Mm 104
-#define UNIT_Kk 105
-#define UNIT_MEG 106
-#define UNIT_Gg 107
-#define UNIT_Tt 108
 
-double StringToNum(QString str);
-int Unittype(QChar unitIn);
+
+bool IsDcCommand(QString str);
+bool IsAcCommand(QString str);
 
 struct TwoSideElement
 {
@@ -46,6 +41,12 @@ struct FourSideElement
     double value;
 };
 
+struct PlotInfo{
+    char type;
+    QString VariableName;
+    PlotInfo(char type, QString VariableName) : type(type),VariableName(VariableName){};
+};
+
 class circuit
 {
 public:
@@ -59,12 +60,17 @@ public:
     QSet<QString> VSourceName;
     QSet<QString> ISourceName;
     QSet<QString> ControledName;
-    QQueue<QString> CommandList;
+    QVector<QString> CommandList;
 
+    struct DC_result *DC_result;
+    struct PlotInfo  *PlotInfo;
+    struct AC_result *AC_result;
     QVector<TwoSideElement> TwoSideElementList;
 
     QVector<FourSideElement> FourSideElementList;
 
+    QString ReferenceNode;
+    
     int DeviceCounts;
 
     void getTitle(QString title);
@@ -79,12 +85,25 @@ public:
     bool AddVCVS(QString Source);
     bool AddCCCS(QString Source, QString next);
     bool AddCCVS(QString Source, QString next);
+    bool ComposeDcCommand(QString);
 
     void AddCommand(QString Command);
+
+    void CommandParse();
+    void DCAanlyze(QString str);
+    void ACAanlyze(struct ACInFo* ACInFo);
+    void ParsePlotInfo(QString str);
+    
 
     cx_mat GenerateDcStamp(double f);
     cx_mat GenerateAcStamp(double f);
 
+    void printTwoSideElement();
+    void printFourSideElement();
+    void UpdateDCStamp_Vsource(double v,QString Name, mat &stamp);
+
+    void amendAnswer_DC(mat &answer);
+    void amendAnswer_AC(cx_mat &answer);
     QString printTitle();
     void printInfo();
     QString printAnnotation();
@@ -92,7 +111,7 @@ public:
     void printCommand();
     QStringList printNodesInfo();
     void Update();
-
+    void setReferenceNode();
     circuit();
     ~circuit();
 };

@@ -51,25 +51,10 @@ public slots:
     void slotNewFile();
     void slotOpenFile();
     void slotSaveFile();
-
-    /** @brief slot of hello world demo */
-    void slotHelloWorld();
-
-    /** @brief slot of regular expression demo */
-    // void slotRegExp();
-
-    /** @brief slot of qt plotter demo */
-    // void slotCallPlotter();
-
-    /** @brief slot of show C++ tutorial */
-    // void slotCppTutorial();
-
-    /** @brief slot of matrix operations demo*/
-    // void slotMatrixOperations();
     void slotParser();
 
     void slotStamp();
-
+    void slotPlot();
 private:
     QMenu *fileMenu;
     QMenu *editMenu;
@@ -85,14 +70,11 @@ private:
     QAction *copyAction;
     QAction *pasteAction;
 
-    // QAction *helloAction;            // hello world demo
-    // QAction *regexpAction;           // regular expression demo
-    // QAction *plotterAction;          // qt plotter demo
-    // QAction *cppTutorialAction;      // C++ tutorial
-    // QAction *matrixOperationsAction; // matrix operations
     QAction *parserAction; // parser
 
     QAction *stampAction;
+
+    QAction *plotAction;
 
     QTextEdit *text;
 

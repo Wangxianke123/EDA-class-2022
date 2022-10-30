@@ -14,10 +14,10 @@ EQ            = =
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -DQT_NO_DEBUG -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
+DEFINES       = -DQT_NO_DEBUG -DQT_PRINTSUPPORT_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O2 -Wall -Wextra -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -O2 -Wall -Wextra -D_REENTRANT -fPIC $(DEFINES)
-INCPATH       = -I. -I. -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -Ibuild -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++
+INCPATH       = -I. -I. -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -Ibuild -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++
 QMAKE         = /usr/lib/qt5/bin/qmake
 DEL_FILE      = rm -f
 CHK_DIR_EXISTS= test -d
@@ -40,7 +40,7 @@ DISTNAME      = EDA_wenkai1.0.0
 DISTDIR = /home/wenkai/EDA_wenkai/build/EDA_wenkai1.0.0
 LINK          = g++
 LFLAGS        = -Wl,-O1
-LIBS          = $(SUBLIBS) /usr/lib/x86_64-linux-gnu/libQt5Widgets.so /usr/lib/x86_64-linux-gnu/libQt5Gui.so /usr/lib/x86_64-linux-gnu/libQt5Core.so -lGL -lpthread   
+LIBS          = $(SUBLIBS) -larmadillo /usr/lib/x86_64-linux-gnu/libQt5PrintSupport.so /usr/lib/x86_64-linux-gnu/libQt5Widgets.so /usr/lib/x86_64-linux-gnu/libQt5Gui.so /usr/lib/x86_64-linux-gnu/libQt5Core.so -lGL -lpthread   
 AR            = ar cqs
 RANLIB        = 
 SED           = sed
@@ -54,15 +54,23 @@ OBJECTS_DIR   = build/
 
 SOURCES       = main.cpp \
 		parser/circuit.cpp \
+		parser/analyzer.cpp \
 		mainwindow/mainwindow.cpp \
-		cpp_tutorial/myWidget.cpp build/moc_mainwindow.cpp \
-		build/moc_myWidget.cpp
+		cpp_tutorial/myWidget.cpp \
+		solver/solver.cpp \
+		plotter/qcustomplot.cpp build/moc_mainwindow.cpp \
+		build/moc_myWidget.cpp \
+		build/moc_qcustomplot.cpp
 OBJECTS       = build/main.o \
 		build/circuit.o \
+		build/analyzer.o \
 		build/mainwindow.o \
 		build/myWidget.o \
+		build/solver.o \
+		build/qcustomplot.o \
 		build/moc_mainwindow.o \
-		build/moc_myWidget.o
+		build/moc_myWidget.o \
+		build/moc_qcustomplot.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/linux.conf \
@@ -143,10 +151,15 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		EDA_wenkai.pro parser/circuit.h \
 		parser/analyzer.h \
 		mainwindow/mainwindow.h \
-		cpp_tutorial/myWidget.h main.cpp \
+		cpp_tutorial/myWidget.h \
+		solver/solver.h \
+		plotter/qcustomplot.h main.cpp \
 		parser/circuit.cpp \
+		parser/analyzer.cpp \
 		mainwindow/mainwindow.cpp \
-		cpp_tutorial/myWidget.cpp
+		cpp_tutorial/myWidget.cpp \
+		solver/solver.cpp \
+		plotter/qcustomplot.cpp
 QMAKE_TARGET  = EDA_wenkai
 DESTDIR       = 
 TARGET        = EDA_wenkai
@@ -330,8 +343,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents parser/circuit.h parser/analyzer.h mainwindow/mainwindow.h cpp_tutorial/myWidget.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp parser/circuit.cpp mainwindow/mainwindow.cpp cpp_tutorial/myWidget.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents parser/circuit.h parser/analyzer.h mainwindow/mainwindow.h cpp_tutorial/myWidget.h solver/solver.h plotter/qcustomplot.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp parser/circuit.cpp parser/analyzer.cpp mainwindow/mainwindow.cpp cpp_tutorial/myWidget.cpp solver/solver.cpp plotter/qcustomplot.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -363,19 +376,25 @@ compiler_moc_predefs_clean:
 build/moc_predefs.h: /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 	g++ -pipe -O2 -Wall -Wextra -dM -E -o build/moc_predefs.h /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: build/moc_mainwindow.cpp build/moc_myWidget.cpp
+compiler_moc_header_make_all: build/moc_mainwindow.cpp build/moc_myWidget.cpp build/moc_qcustomplot.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) build/moc_mainwindow.cpp build/moc_myWidget.cpp
+	-$(DEL_FILE) build/moc_mainwindow.cpp build/moc_myWidget.cpp build/moc_qcustomplot.cpp
 build/moc_mainwindow.cpp: mainwindow/mainwindow.h \
 		parser/circuit.h \
+		solver/solver.h \
 		build/moc_predefs.h \
 		/usr/lib/qt5/bin/moc
-	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/wenkai/EDA_wenkai/build/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/wenkai/EDA_wenkai -I/home/wenkai/EDA_wenkai -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/include/c++/11/backward -I/usr/lib/gcc/x86_64-linux-gnu/11/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include mainwindow/mainwindow.h -o build/moc_mainwindow.cpp
+	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/wenkai/EDA_wenkai/build/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/wenkai/EDA_wenkai -I/home/wenkai/EDA_wenkai -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/include/c++/11/backward -I/usr/lib/gcc/x86_64-linux-gnu/11/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include mainwindow/mainwindow.h -o build/moc_mainwindow.cpp
 
 build/moc_myWidget.cpp: cpp_tutorial/myWidget.h \
 		build/moc_predefs.h \
 		/usr/lib/qt5/bin/moc
-	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/wenkai/EDA_wenkai/build/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/wenkai/EDA_wenkai -I/home/wenkai/EDA_wenkai -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/include/c++/11/backward -I/usr/lib/gcc/x86_64-linux-gnu/11/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include cpp_tutorial/myWidget.h -o build/moc_myWidget.cpp
+	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/wenkai/EDA_wenkai/build/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/wenkai/EDA_wenkai -I/home/wenkai/EDA_wenkai -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/include/c++/11/backward -I/usr/lib/gcc/x86_64-linux-gnu/11/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include cpp_tutorial/myWidget.h -o build/moc_myWidget.cpp
+
+build/moc_qcustomplot.cpp: plotter/qcustomplot.h \
+		build/moc_predefs.h \
+		/usr/lib/qt5/bin/moc
+	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/wenkai/EDA_wenkai/build/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/wenkai/EDA_wenkai -I/home/wenkai/EDA_wenkai -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/include/c++/11/backward -I/usr/lib/gcc/x86_64-linux-gnu/11/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include plotter/qcustomplot.h -o build/moc_qcustomplot.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -394,26 +413,45 @@ compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean
 ####### Compile
 
 build/main.o: main.cpp mainwindow/mainwindow.h \
-		parser/circuit.h
+		parser/circuit.h \
+		solver/solver.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/main.o main.cpp
 
-build/circuit.o: parser/circuit.cpp parser/circuit.h
+build/circuit.o: parser/circuit.cpp parser/circuit.h \
+		solver/solver.h \
+		parser/analyzer.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/circuit.o parser/circuit.cpp
+
+build/analyzer.o: parser/analyzer.cpp parser/analyzer.h \
+		parser/circuit.h \
+		solver/solver.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/analyzer.o parser/analyzer.cpp
 
 build/mainwindow.o: mainwindow/mainwindow.cpp mainwindow/mainwindow.h \
 		parser/circuit.h \
+		solver/solver.h \
 		cpp_tutorial/myWidget.h \
-		parser/analyzer.h
+		parser/analyzer.h \
+		plotter/qcustomplot.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/mainwindow.o mainwindow/mainwindow.cpp
 
 build/myWidget.o: cpp_tutorial/myWidget.cpp cpp_tutorial/myWidget.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/myWidget.o cpp_tutorial/myWidget.cpp
+
+build/solver.o: solver/solver.cpp solver/solver.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/solver.o solver/solver.cpp
+
+build/qcustomplot.o: plotter/qcustomplot.cpp plotter/qcustomplot.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/qcustomplot.o plotter/qcustomplot.cpp
 
 build/moc_mainwindow.o: build/moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/moc_mainwindow.o build/moc_mainwindow.cpp
 
 build/moc_myWidget.o: build/moc_myWidget.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/moc_myWidget.o build/moc_myWidget.cpp
+
+build/moc_qcustomplot.o: build/moc_qcustomplot.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/moc_qcustomplot.o build/moc_qcustomplot.cpp
 
 ####### Install
 

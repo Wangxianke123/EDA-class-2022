@@ -13,6 +13,8 @@
 #include "cpp_tutorial/myWidget.h"
 #include "parser/circuit.h"
 #include "parser/analyzer.h"
+#include "solver/solver.h"
+#include "plotter/qcustomplot.h"
 //#include "matrix/matrix.h"
 //#include "plotter/qcustomplot.h"
 //#include "regexp/regexp.h"
@@ -92,27 +94,7 @@ void MainWindow::createActions()
     pasteAction->setStatusTip(tr("Paste clipboard to selection"));
     connect(pasteAction, SIGNAL(triggered()), text, SLOT(paste()));
 
-    /** @brief demo1 to use QLabel to print Hello World*/
-    // helloAction = new QAction(tr("hello world"), this);
-    // helloAction->setToolTip(tr("use QLabel to print Hello World"));
-    // connect(helloAction, SIGNAL(triggered()), this, SLOT(slotHelloWorld()));
-
-    // regexpAction = new QAction(tr("Reg Exp"), this);
-    // regexpAction->setToolTip(tr("regular expression demo"));
-    // connect(regexpAction, SIGNAL(triggered()), this, SLOT(slotRegExp()));
-
-    // plotterAction = new QAction(tr("Plotter"), this);
-    // plotterAction->setToolTip(tr("Qt Plotter demo"));
-    // connect(plotterAction, SIGNAL(triggered()), this, SLOT(slotCallPlotter()));
-
-    /*     cppTutorialAction = new QAction(tr("Cpp Tutorial"), this);
-        cppTutorialAction->setToolTip(tr("Cpp tutorial"));
-        connect(cppTutorialAction, SIGNAL(triggered()), this, SLOT(slotCppTutorial())); */
-
-    // matrixOperationsAction = new QAction(tr("Matrix Operations"), this);
-    // matrixOperationsAction->setToolTip(tr("Matrix Operations"));
-    // connect(matrixOperationsAction, SIGNAL(triggered()), this, SLOT(slotMatrixOperations()));
-
+   
     parserAction = new QAction(tr("Parser"), this);
     parserAction->setToolTip(tr("Parser"));
     connect(parserAction, SIGNAL(triggered()), this, SLOT(slotParser()));
@@ -120,6 +102,10 @@ void MainWindow::createActions()
     stampAction = new QAction(tr("Stamp"), this);
     stampAction->setToolTip(tr("Stamp"));
     connect(stampAction, SIGNAL(triggered()), this, SLOT(slotStamp()));
+
+    plotAction = new QAction(tr("Plot"), this);
+    plotAction->setToolTip(tr("Plot"));
+    connect(plotAction, SIGNAL(triggered()), this, SLOT(slotPlot()));
 }
 
 void MainWindow::createMenus()
@@ -139,27 +125,12 @@ void MainWindow::createMenus()
 
 void MainWindow::createToolBars()
 {
-
-    /// You can use multiple toolbars. Actions are separated in the interface.
-    // fileTool = addToolBar(tr("File"));
-    // editTool = addToolBar(tr("Edit"));
     demoTool = addToolBar(tr("demo"));
 
-    // fileTool->addAction(fileNewAction);
-    // fileTool->addAction(fileOpenAction);
-    // fileTool->addAction(fileSaveAction);
 
-    // editTool->addAction(copyAction);
-    // editTool->addAction(cutAction);
-    // editTool->addAction(pasteAction);
-
-    // demoTool->addAction(helloAction);
-    // demoTool->addAction(regexpAction);
-    // demoTool->addAction(plotterAction);
-    /*     demoTool->addAction(cppTutorialAction); */
-    // demoTool->addAction(matrixOperationsAction);
     demoTool->addAction(parserAction);
     demoTool->addAction(stampAction);
+    demoTool->addAction(plotAction);
 }
 
 /**
@@ -311,26 +282,16 @@ void MainWindow::slotSaveFile()
  * @author Deng Qiyu
  * @date 2022/08/09
  */
-void MainWindow::slotHelloWorld()
-{
-    QLabel *label = new QLabel();
-    label->setText("Hello World!");
-    /** @brief Detail settings for label.
-     * You can find more functions in ref web at the front of this file */
-    label->setAlignment(Qt::AlignCenter);
-    // label->setStyleSheet("QLabel{font:15px;color:red;background-color:rgb(f9,f9,"
-    //  "f9);}");
-    label->setStyleSheet("font:30px;color:black;background-color:yellow");
-    label->resize(400, 300);
-    label->show(); // label should be shown to be seen.
-}
+/*  
+*/
 
 void MainWindow::slotStamp()
 {
     QLabel *label = new QLabel();
-
+    qDebug()<<MainCircuit->CommandList;
+    MainCircuit->CommandParse();
     QStringList content;
-    cx_mat A = MainCircuit->GenerateDcStamp(1000000000);
+    cx_mat A = MainCircuit->GenerateDcStamp(1);
     content << "Here is the stamp of circuit:";
     content = content + printMatrix(A.submat(arma::span(0, A.n_rows - 1), arma::span(0, A.n_cols - 2)));
     content << "RHS:";
@@ -341,186 +302,82 @@ void MainWindow::slotStamp()
     label->resize(400, 300);
     label->show();
 }
-/**
- * @brief Demo to show regular expression in Qt
- * @author Limin Hao
- * @date 2022/08/12
- * @note open regexp.cpp and execute it.
- */
-/* void MainWindow::slotRegExp()
+
+
+void MainWindow::slotPlot()
 {
-    QString currPath = QDir::currentPath();
-    qDebug() << "Current path is " << currPath << endl;
-
-    QString filename = currPath + "/src/regexp/regexp.cpp";
-    QFile   file(filename);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Error"), tr("Failed to open file!"));
+    if (MainCircuit->PlotInfo == nullptr){
         return;
     }
-    if (!file.isReadable()) {
-        QMessageBox::warning(this, tr("Error"), tr("The file is unreadable"));
-        return;
-    }
-
-    text->clear();
-    text->setStyleSheet("font:15px; color: blue");
-    QTextStream textStream(&file); // Use QTextStream to load text.
-    while (!textStream.atEnd()) {
-        text->setPlainText(textStream.readAll());
-    }
-    text->show();
-    file.close();
-
-    //
-    // Call regular expression function
-    //
-    testRegExp();
-} */
-
-/**
- * @brief Demo to show Qt Plotter
- * @author Smallxie
- * @brief This is a demo for simple bode plot
- * @date 2022/08/12
- */
-/* void MainWindow::slotCallPlotter()
-{
-    QFile file(fileName);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Error"), tr("Load the content in txt file failed."),
-                             QMessageBox::Ok);
-        return;
-    }
-    QTextStream textStream(&file);
-
-    QString         xlabel, y1label, y2label;
-    QVector<double> freqData, dBMagData, phaseData;
-
-    int lineCount = 0;
-    while (!textStream.atEnd()) {
-        lineCount += 1;
-        QString     line = textStream.readLine();
-        QStringList elements = line.split(",");
-
-        // qDebug() << line << elements << textStream.realNumberPrecision();
-        if (elements.length() != 3) {
-            QMessageBox::warning(this, tr("Warning"),
-                                 tr("The data format in our demo demands <x1, y1, y2>."));
-            return;
-        } else {
-            // The first line is used for creating label
-            if (lineCount == 1) {
-                xlabel = elements[0];
-                y1label = elements[1];
-                y2label = elements[2];
-            } else {
-                freqData << elements[0].toDouble();
-                dBMagData << elements[1].toDouble();
-                phaseData << elements[2].toDouble();
-            }
+    switch (MainCircuit->PlotInfo->type)
+    {
+    case 'd':{
+        QVector<double> x,y;
+        double start,stop,step;
+        start = MainCircuit->DC_result->start;
+        stop = MainCircuit->DC_result->stop;
+        step = MainCircuit->DC_result->step;
+        int n = MainCircuit->DC_result->answer_table.size();
+        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInfo->VariableName];
+        qDebug()<<"pos:"<<pos;
+        for (int i = 0; i < n; i++)
+        {
+            qDebug()<<"x:"<<start+i*step<<"y:"<<MainCircuit->DC_result->answer_table[i][pos];
+            x.push_back(start+i*step);
+            y.push_back(MainCircuit->DC_result->answer_table[i][pos]);
         }
-    }
-
-    file.close();
-
-    QCustomPlot *custPlot = new QCustomPlot();
-    custPlot->addGraph(custPlot->xAxis, custPlot->yAxis);
-    custPlot->graph(0)->setPen(QPen(QPen(Qt::blue)));
-    custPlot->graph(0)->setLineStyle(QCPGraph::lsLine);
-    custPlot->graph(0)->setData(freqData, dBMagData);
-    custPlot->graph(0)->rescaleAxes();
-
-    custPlot->xAxis->setLabel(xlabel);
-    QSharedPointer<QCPAxisTickerLog> logTicker(new QCPAxisTickerLog);
-    custPlot->xAxis->setTicker(logTicker);
-    custPlot->xAxis->setScaleType(QCPAxis::stLogarithmic);
-    custPlot->yAxis->setLabel(y1label);
-
-    custPlot->addGraph(custPlot->xAxis, custPlot->yAxis2);
-    custPlot->graph(1)->setPen(QPen(Qt::red));
-    custPlot->graph(1)->setData(freqData, phaseData);
-    custPlot->graph(1)->rescaleAxes(true);
-    custPlot->yAxis2->setLabel(y2label);
-    custPlot->yAxis2->setVisible(true);
-
-    custPlot->replot();
-    custPlot->setMinimumSize(450, 300);
-    custPlot->show();
-} */
-
-/**
- * @brief Simple C++ tutorial
- * @author Mingzhen Li
- * @brief This is a demo for OOP feature of C++
- * @date 2022/08/12
- */
-/* void MainWindow::slotCppTutorial()
-{
-    QString currPath = QDir::currentPath();
-    qDebug() << "Current path is " << currPath << Qt::endl;
-
-    QString filename = currPath + "/cpp_tutorial/myWidget.cpp";
-    QFile file(filename);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        QMessageBox::warning(this, tr("Error"), tr("Failed to open file!"));
+        QCustomPlot *customPlot = new QCustomPlot();
+        customPlot->addGraph();
+        customPlot->graph(0)->setData(x, y);
+        // give the axes some labels:
+        customPlot->xAxis->setLabel("Vsrc");
+        customPlot->yAxis->setLabel("V"+ MainCircuit->PlotInfo->VariableName);
+        qDebug()<<"begin:"<<*y.begin()<<"end:"<<*y.end();
+        // set axes ranges, so we see all data:
+        customPlot->xAxis->setRange(start, stop);
+        customPlot->yAxis->setRange(*y.begin(), *(y.end()-1));
+        customPlot->replot();
+        customPlot->show();
         return;
+        break;
     }
-    if (!file.isReadable())
-    {
-        QMessageBox::warning(this, tr("Error"), tr("The file is unreadable"));
-        return;
+    case 'a':{
+        QVector<double> freqData,dBMagData,phaseData;
+        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInfo->VariableName];
+        int n = MainCircuit->AC_result->cols;
+         for (int i = 0; i < n; i++)
+        {
+            qDebug()<<"x:"<<MainCircuit->AC_result->FrequencyList[i]<<"M:"<<MainCircuit->AC_result->Magnitude[i][pos];
+            freqData.push_back(MainCircuit->AC_result->FrequencyList[i]);
+            dBMagData.push_back(MainCircuit->AC_result->Magnitude[i][pos]);
+            phaseData.push_back(MainCircuit->AC_result->Phase[i][pos]);
+        }
+        QCustomPlot *custPlot = new QCustomPlot();
+        custPlot->addGraph(custPlot->xAxis, custPlot->yAxis);
+        custPlot->graph(0)->setPen(QPen(QPen(Qt::blue)));
+        custPlot->graph(0)->setLineStyle(QCPGraph::lsLine);
+        custPlot->graph(0)->setData(freqData, dBMagData);
+        custPlot->graph(0)->rescaleAxes();
+
+        custPlot->xAxis->setLabel("Freq");
+        QSharedPointer<QCPAxisTickerLog> logTicker(new QCPAxisTickerLog);
+        custPlot->xAxis->setTicker(logTicker);
+        custPlot->xAxis->setScaleType(QCPAxis::stLogarithmic);
+        custPlot->yAxis->setLabel("M");
+
+        // custPlot->addGraph(custPlot->xAxis, custPlot->yAxis2);
+        // custPlot->graph(1)->setPen(QPen(Qt::red));
+        // custPlot->graph(1)->setData(freqData, phaseData);
+        // custPlot->graph(1)->rescaleAxes(true);
+        // custPlot->yAxis2->setLabel("Phase");
+        // custPlot->yAxis2->setVisible(true);
+
+        custPlot->replot();
+        custPlot->setMinimumSize(450, 300);
+        custPlot->show();
     }
-
-    text->clear();
-    text->setStyleSheet("font:15px; color: blue");
-    QTextStream textStream(&file); // Use QTextStream to load text.
-    while (!textStream.atEnd())
-    {
-        text->setPlainText(textStream.readAll());
+    default:
+        break;
     }
-    text->show();
-    file.close();
-
-    MyWidget *myWidget = new MyWidget();
-
-    // MyWidget can call any function of QWidget
-    myWidget->setFixedSize(300, 200);
-    myWidget->setWindowTitle("New Window");
-    myWidget->show();
-} */
-
-/**
- * @brief Matrix Operations
- * @author Limin Hao
- * @date 2022/09/22
- */
-/* void MainWindow::slotMatrixOperations()
-{
-    QString currPath = QDir::currentPath();
-    qDebug() << "Current path is " << currPath << endl;
-
-    QString filename = currPath + "/src/matrix/matrix.cpp";
-    QFile   file(filename);
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QMessageBox::warning(this, tr("Error"), tr("Failed to open file!"));
-        return;
-    }
-    if (!file.isReadable()) {
-        QMessageBox::warning(this, tr("Error"), tr("The file is unreadable"));
-        return;
-    }
-
-    text->clear();
-    text->setStyleSheet("font:15px; color: blue");
-    QTextStream textStream(&file); // Use QTextStream to load text.
-    while (!textStream.atEnd()) {
-        text->setPlainText(textStream.readAll());
-    }
-    text->show();
-    file.close();
-
-    // dense and sparse matrix operations
-    testDenseSparseMatrix();
-} */
+   
+}

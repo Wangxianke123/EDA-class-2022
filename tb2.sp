@@ -1,14 +1,15 @@
-TestBench2 for Homework4
-* 2022 EDA course testbench netlist
-* 2022-10-17
+TA-session-5-ckt-2
+* TestBench 2 for Homework 5, 2022 EDA course.
+* Author    : Hao Limin
+* Date      : 2022/10/25.
+* Info      : RLC filter.
 
-r2 2 1 2
-v2 0 1 ac 10
-l1 0 2 10
-r1 1 3 1
-c2 3 2 2
+R1 1 0 1k
+C1 2 1 100u
+R2 3 2 1
+L1 4 3 100u
+V1 4 0 AC 1
 
-
-.ac dec 10 1 1000
-*.plot ac vm(2) vm(3)
-.END
+.AC DEC 10 1 100MEG
+.plot AC vm(1)
+.end

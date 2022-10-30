@@ -1,4 +1,7 @@
 #include "parser/circuit.h"
+#include "solver/solver.h"
+#include "parser/analyzer.h"
+#include <QVector>
 
 void circuit::getTitle(QString title)
 {
@@ -88,6 +91,24 @@ void circuit::printCommand()
 {
 }
 
+void circuit::printTwoSideElement(){
+    qDebug()<<"Twoside Element:";
+    foreach(const TwoSideElement& value,TwoSideElementList){
+        qDebug()<<"Type:"<<value.type;
+        qDebug()<<"Name:"<<value.Name;
+
+    }
+}
+
+void circuit::printFourSideElement(){
+    qDebug()<<"Fourside Element:";
+    foreach(const FourSideElement& value,FourSideElementList){
+        qDebug()<<"Type:"<<value.type;
+        qDebug()<<"Name:"<<value.Name;
+
+    }
+}
+
 bool circuit::AddResistor(QString Resistor)
 {
     QRegExp node("([^Rr]\\w+)");
@@ -96,14 +117,14 @@ bool circuit::AddResistor(QString Resistor)
     int pos = 0;
     if ((pos = res.indexIn(Resistor, pos)) != -1)
     {
-        if (ResistorName.contains(res.cap(1)))
+        if (ResistorName.contains(res.cap(1).simplified()))
         {
             return false;
         }
         else
         {
-            ResistorName.insert(res.cap(1));
-            TwoSideElement temp('r', res.cap(1));
+            ResistorName.insert(res.cap(1).simplified());
+            TwoSideElement temp('r', res.cap(1).simplified());
             TwoSideElementList.push_back(temp);
             pos += res.matchedLength();
         }
@@ -112,16 +133,16 @@ bool circuit::AddResistor(QString Resistor)
     {
         if ((pos = node.indexIn(Resistor, pos)) != -1)
         {
-            if (!MatrixOrder.contains(node.cap(1)))
-                MatrixOrder.insert(node.cap(1), MatrixOrder.size());
-            NodesName.insert(node.cap(1));
-            TwoSideElementList.last().Nodes[i] = node.cap(1);
+            if (!MatrixOrder.contains(node.cap(1).simplified()))
+                MatrixOrder.insert(node.cap(1).simplified(), MatrixOrder.size());
+            NodesName.insert(node.cap(1).simplified());
+            TwoSideElementList.last().Nodes[i] = node.cap(1).simplified();
             pos += node.matchedLength();
         }
     }
     if ((pos = value.indexIn(Resistor, pos)) != -1)
     {
-        TwoSideElementList.last().ValueInString = value.cap(1);
+        TwoSideElementList.last().ValueInString = value.cap(1).simplified();
         TwoSideElementList.last().value = StringToNum(TwoSideElementList.last().ValueInString);
         pos += value.matchedLength();
     }
@@ -136,14 +157,14 @@ bool circuit::AddCapacitor(QString Capacitor)
     int pos = 0;
     if ((pos = res.indexIn(Capacitor, pos)) != -1)
     {
-        if (CapacitorName.contains(res.cap(1)))
+        if (CapacitorName.contains(res.cap(1).simplified()))
         {
             return false;
         }
         else
         {
-            CapacitorName.insert(res.cap(1));
-            TwoSideElement temp('c', res.cap(1));
+            CapacitorName.insert(res.cap(1).simplified());
+            TwoSideElement temp('c', res.cap(1).simplified());
             TwoSideElementList.push_back(temp);
             pos += res.matchedLength();
         }
@@ -152,16 +173,16 @@ bool circuit::AddCapacitor(QString Capacitor)
     {
         if ((pos = node.indexIn(Capacitor, pos)) != -1)
         {
-            if (!MatrixOrder.contains(node.cap(1)))
-                MatrixOrder.insert(node.cap(1), MatrixOrder.size());
-            NodesName.insert(node.cap(1));
-            TwoSideElementList.last().Nodes[i] = node.cap(1);
+            if (!MatrixOrder.contains(node.cap(1).simplified()))
+                MatrixOrder.insert(node.cap(1).simplified(), MatrixOrder.size());
+            NodesName.insert(node.cap(1).simplified());
+            TwoSideElementList.last().Nodes[i] = node.cap(1).simplified();
             pos += node.matchedLength();
         }
     }
     if ((pos = value.indexIn(Capacitor, pos)) != -1)
     {
-        TwoSideElementList.last().ValueInString = value.cap(1);
+        TwoSideElementList.last().ValueInString = value.cap(1).simplified();
         TwoSideElementList.last().value = StringToNum(TwoSideElementList.last().ValueInString);
         pos += value.matchedLength();
     }
@@ -176,17 +197,17 @@ bool circuit::AddInductance(QString Inductance)
     int pos = 0;
     if ((pos = res.indexIn(Inductance, pos)) != -1)
     {
-        if (InductanceName.contains(res.cap(1)))
+        if (InductanceName.contains(res.cap(1).simplified()))
         {
             return false;
         }
         else
         {
-            InductanceName.insert(res.cap(1));
-            TwoSideElement temp('l', res.cap(1));
+            InductanceName.insert(res.cap(1).simplified());
+            TwoSideElement temp('l', res.cap(1).simplified());
             TwoSideElementList.push_back(temp);
             // Modified the nodes
-            MatrixOrder.insert("I_" + res.cap(1), MatrixOrder.size());
+            MatrixOrder.insert("I_" + res.cap(1).simplified(), MatrixOrder.size());
             pos += res.matchedLength();
         }
     }
@@ -194,16 +215,16 @@ bool circuit::AddInductance(QString Inductance)
     {
         if ((pos = node.indexIn(Inductance, pos)) != -1)
         {
-            if (!MatrixOrder.contains(node.cap(1)))
-                MatrixOrder.insert(node.cap(1), MatrixOrder.size());
-            NodesName.insert(node.cap(1));
-            TwoSideElementList.last().Nodes[i] = node.cap(1);
+            if (!MatrixOrder.contains(node.cap(1).simplified()))
+                MatrixOrder.insert(node.cap(1).simplified(), MatrixOrder.size());
+            NodesName.insert(node.cap(1).simplified());
+            TwoSideElementList.last().Nodes[i] = node.cap(1).simplified();
             pos += node.matchedLength();
         }
     }
     if ((pos = value.indexIn(Inductance, pos)) != -1)
     {
-        TwoSideElementList.last().ValueInString = value.cap(1);
+        TwoSideElementList.last().ValueInString = value.cap(1).simplified();
         TwoSideElementList.last().value = StringToNum(TwoSideElementList.last().ValueInString);
         pos += value.matchedLength();
     }
@@ -218,17 +239,18 @@ bool circuit::AddVoltageSource(QString VSource)
     int pos = 0;
     if ((pos = res.indexIn(VSource, pos)) != -1)
     {
-        if (VSourceName.contains(res.cap(1)))
+        if (VSourceName.contains(res.cap(1).simplified()))
         {
             return false;
         }
         else
         {
-            VSourceName.insert(res.cap(1));
-            TwoSideElement temp('v', res.cap(1));
+            VSourceName.insert(res.cap(1).simplified());
+            TwoSideElement temp('v', res.cap(1).simplified());
             TwoSideElementList.push_back(temp);
             // Modified the nodes
-            MatrixOrder.insert("I_" + res.cap(1), MatrixOrder.size());
+            MatrixOrder.insert("I_" + res.cap(1).simplified(), MatrixOrder.size());
+            qDebug()<<"Insert:"<<"I_" + res.cap(1).simplified()<<","<<MatrixOrder.size();
             pos += res.matchedLength();
         }
     }
@@ -237,17 +259,17 @@ bool circuit::AddVoltageSource(QString VSource)
     {
         if ((pos = node.indexIn(VSource, pos)) != -1)
         {
-            if (!MatrixOrder.contains(node.cap(1)))
-                MatrixOrder.insert(node.cap(1), MatrixOrder.size());
-            NodesName.insert(node.cap(1));
-            TwoSideElementList.last().Nodes[i] = node.cap(1);
+            if (!MatrixOrder.contains(node.cap(1).simplified().simplified()))
+                MatrixOrder.insert(node.cap(1).simplified().simplified(), MatrixOrder.size());
+            NodesName.insert(node.cap(1).simplified().simplified());
+            TwoSideElementList.last().Nodes[i] = node.cap(1).simplified().simplified();
             pos += node.matchedLength();
         }
     }
 
     if ((pos = value.indexIn(VSource, pos)) != -1)
     {
-        TwoSideElementList.last().ValueInString = value.cap(1);
+        TwoSideElementList.last().ValueInString = value.cap(1).simplified();
         TwoSideElementList.last().value = StringToNum(TwoSideElementList.last().ValueInString);
         pos += value.matchedLength();
     }
@@ -262,14 +284,14 @@ bool circuit::AddCurrentSource(QString ISource)
     int pos = 0;
     if ((pos = res.indexIn(ISource, pos)) != -1)
     {
-        if (ISourceName.contains(res.cap(1)))
+        if (ISourceName.contains(res.cap(1).simplified()))
         {
             return false;
         }
         else
         { // make a new element
-            ISourceName.insert(res.cap(1));
-            TwoSideElement temp('i', res.cap(1));
+            ISourceName.insert(res.cap(1).simplified());
+            TwoSideElement temp('i', res.cap(1).simplified());
             TwoSideElementList.push_back(temp);
             pos += res.matchedLength();
         }
@@ -279,17 +301,17 @@ bool circuit::AddCurrentSource(QString ISource)
     {
         if ((pos = node.indexIn(ISource, pos)) != -1)
         { // add new nodes into nodelist
-            if (!MatrixOrder.contains(node.cap(1)))
-                MatrixOrder.insert(node.cap(1), MatrixOrder.size());
-            NodesName.insert(node.cap(1));
-            TwoSideElementList.last().Nodes[i] = node.cap(1);
+            if (!MatrixOrder.contains(node.cap(1).simplified()))
+                MatrixOrder.insert(node.cap(1).simplified(), MatrixOrder.size());
+            NodesName.insert(node.cap(1).simplified());
+            TwoSideElementList.last().Nodes[i] = node.cap(1).simplified();
             pos += node.matchedLength();
         }
     }
 
     if ((pos = value.indexIn(ISource, pos)) != -1)
     { // grep value of element
-        TwoSideElementList.last().ValueInString = value.cap(1);
+        TwoSideElementList.last().ValueInString = value.cap(1).simplified();
         TwoSideElementList.last().value = StringToNum(TwoSideElementList.last().ValueInString);
         pos += value.matchedLength();
     }
@@ -304,14 +326,14 @@ bool circuit::AddVCCS(QString Source) // G
     int pos = 0;
     if ((pos = name.indexIn(Source, pos)) != -1)
     {
-        if (ControledName.contains(name.cap(1)))
+        if (ControledName.contains(name.cap(1).simplified()))
         {
             return false;
         }
         else
         { // make a new element
-            ControledName.insert(name.cap(1));
-            FourSideElement temp('G', name.cap(1));
+            ControledName.insert(name.cap(1).simplified());
+            FourSideElement temp('G', name.cap(1).simplified());
             FourSideElementList.push_back(temp);
             pos += name.matchedLength();
         }
@@ -321,17 +343,17 @@ bool circuit::AddVCCS(QString Source) // G
     {
         if ((pos = node.indexIn(Source, pos)) != -1)
         { // add new nodes into nodelist
-            if (!MatrixOrder.contains(node.cap(1)))
-                MatrixOrder.insert(node.cap(1), MatrixOrder.size());
-            NodesName.insert(node.cap(1));
-            FourSideElementList.last().Nodes[i] = node.cap(1);
+            if (!MatrixOrder.contains(node.cap(1).simplified()))
+                MatrixOrder.insert(node.cap(1).simplified(), MatrixOrder.size());
+            NodesName.insert(node.cap(1).simplified());
+            FourSideElementList.last().Nodes[i] = node.cap(1).simplified();
             pos += node.matchedLength();
         }
     }
 
     if ((pos = value.indexIn(Source, pos)) != -1)
     { // grep value of element
-        FourSideElementList.last().ValueInString = value.cap(1);
+        FourSideElementList.last().ValueInString = value.cap(1).simplified();
         FourSideElementList.last().value = StringToNum(FourSideElementList.last().ValueInString);
         pos += value.matchedLength();
     }
@@ -345,17 +367,17 @@ bool circuit::AddVCVS(QString Source) // E
     int pos = 0;
     if ((pos = name.indexIn(Source, pos)) != -1)
     {
-        if (ControledName.contains(name.cap(1)))
+        if (ControledName.contains(name.cap(1).simplified()))
         {
             return false;
         }
         else
         { // make a new element
-            ControledName.insert(name.cap(1));
-            FourSideElement temp('E', name.cap(1));
+            ControledName.insert(name.cap(1).simplified());
+            FourSideElement temp('E', name.cap(1).simplified());
             FourSideElementList.push_back(temp);
             // Modified the nodes
-            MatrixOrder.insert("I_" + name.cap(1), MatrixOrder.size());
+            MatrixOrder.insert("I_" + name.cap(1).simplified(), MatrixOrder.size());
             pos += name.matchedLength();
         }
     }
@@ -364,17 +386,17 @@ bool circuit::AddVCVS(QString Source) // E
     {
         if ((pos = node.indexIn(Source, pos)) != -1)
         { // add new nodes into nodelist
-            if (!MatrixOrder.contains(node.cap(1)))
-                MatrixOrder.insert(node.cap(1), MatrixOrder.size());
-            NodesName.insert(node.cap(1));
-            FourSideElementList.last().Nodes[i] = node.cap(1);
+            if (!MatrixOrder.contains(node.cap(1).simplified()))
+                MatrixOrder.insert(node.cap(1).simplified(), MatrixOrder.size());
+            NodesName.insert(node.cap(1).simplified());
+            FourSideElementList.last().Nodes[i] = node.cap(1).simplified();
             pos += node.matchedLength();
         }
     }
 
     if ((pos = value.indexIn(Source, pos)) != -1)
     { // grep value of element
-        FourSideElementList.last().ValueInString = value.cap(1);
+        FourSideElementList.last().ValueInString = value.cap(1).simplified();
         FourSideElementList.last().value = StringToNum(FourSideElementList.last().ValueInString);
         pos += value.matchedLength();
     }
@@ -389,17 +411,17 @@ bool circuit::AddCCCS(QString Source, QString next) // F
     int pos = 0;
     if ((pos = name.indexIn(Source, pos)) != -1)
     {
-        if (ControledName.contains(name.cap(1)))
+        if (ControledName.contains(name.cap(1).simplified()))
         {
             return false;
         }
         else
         { // make a new element
-            ControledName.insert(name.cap(1));
-            FourSideElement temp('F', name.cap(1));
+            ControledName.insert(name.cap(1).simplified());
+            FourSideElement temp('F', name.cap(1).simplified());
             FourSideElementList.push_back(temp);
             // Modified the nodes
-            // MatrixOrder.insert("I_" + name.cap(1), MatrixOrder.size());
+            // MatrixOrder.insert("I_" + name.cap(1).simplified(), MatrixOrder.size());
             pos += name.matchedLength();
         }
     }
@@ -408,22 +430,22 @@ bool circuit::AddCCCS(QString Source, QString next) // F
     {
         if ((pos = node.indexIn(Source, pos)) != -1)
         { // add new nodes into nodelist
-            if (!MatrixOrder.contains(node.cap(1)))
-                MatrixOrder.insert(node.cap(1), MatrixOrder.size());
-            NodesName.insert(node.cap(1));
-            FourSideElementList.last().Nodes[i] = node.cap(1);
+            if (!MatrixOrder.contains(node.cap(1).simplified()))
+                MatrixOrder.insert(node.cap(1).simplified(), MatrixOrder.size());
+            NodesName.insert(node.cap(1).simplified());
+            FourSideElementList.last().Nodes[i] = node.cap(1).simplified();
             pos += node.matchedLength();
         }
     }
     if ((pos = node.indexIn(Source, pos)) != -1)
     { // add new nodes into nodelist
-        VSourceName.insert(node.cap(1));
-        FourSideElementList.last().Controler = node.cap(1);
+        VSourceName.insert(node.cap(1).simplified());
+        FourSideElementList.last().Controler = node.cap(1).simplified();
         pos += node.matchedLength();
     }
     if ((pos = value.indexIn(Source, pos)) != -1)
     { // grep value of element
-        FourSideElementList.last().ValueInString = value.cap(1);
+        FourSideElementList.last().ValueInString = value.cap(1).simplified();
         FourSideElementList.last().value = StringToNum(FourSideElementList.last().ValueInString);
         pos += value.matchedLength();
     }
@@ -433,10 +455,10 @@ bool circuit::AddCCCS(QString Source, QString next) // F
     {
         if ((pos_next = srcNode.indexIn(next, pos_next)) != -1)
         { // add new nodes into nodelist
-            if (!MatrixOrder.contains(srcNode.cap(1)))
-                MatrixOrder.insert(srcNode.cap(1), MatrixOrder.size());
-            NodesName.insert(srcNode.cap(1));
-            FourSideElementList.last().Nodes[i] = srcNode.cap(1);
+            if (!MatrixOrder.contains(srcNode.cap(1).simplified()))
+                MatrixOrder.insert(srcNode.cap(1).simplified(), MatrixOrder.size());
+            NodesName.insert(srcNode.cap(1).simplified());
+            FourSideElementList.last().Nodes[i] = srcNode.cap(1).simplified();
             pos_next += srcNode.matchedLength();
         }
     }
@@ -451,17 +473,17 @@ bool circuit::AddCCVS(QString Source, QString next) // H
     int pos = 0;
     if ((pos = name.indexIn(Source, pos)) != -1)
     {
-        if (ControledName.contains(name.cap(1)))
+        if (ControledName.contains(name.cap(1).simplified()))
         {
             return false;
         }
         else
         { // make a new element
-            ControledName.insert(name.cap(1));
-            FourSideElement temp('G', name.cap(1));
+            ControledName.insert(name.cap(1).simplified());
+            FourSideElement temp('G', name.cap(1).simplified());
             FourSideElementList.push_back(temp);
             // Modified the nodes
-            MatrixOrder.insert("I_" + name.cap(1), MatrixOrder.size());
+            MatrixOrder.insert("I_" + name.cap(1).simplified(), MatrixOrder.size());
             pos += name.matchedLength();
         }
     }
@@ -470,23 +492,23 @@ bool circuit::AddCCVS(QString Source, QString next) // H
     {
         if ((pos = node.indexIn(Source, pos)) != -1)
         { // add new nodes into nodelist
-            if (!MatrixOrder.contains(node.cap(1)))
-                MatrixOrder.insert(node.cap(1), MatrixOrder.size());
-            NodesName.insert(node.cap(1));
-            FourSideElementList.last().Nodes[i] = node.cap(1);
+            if (!MatrixOrder.contains(node.cap(1).simplified()))
+                MatrixOrder.insert(node.cap(1).simplified(), MatrixOrder.size());
+            NodesName.insert(node.cap(1).simplified());
+            FourSideElementList.last().Nodes[i] = node.cap(1).simplified();
             pos += node.matchedLength();
         }
     }
     if ((pos = node.indexIn(Source, pos)) != -1)
     { // add new nodes into nodelist
-        VSourceName.insert(node.cap(1));
-        FourSideElementList.last().Controler = node.cap(1);
+        VSourceName.insert(node.cap(1).simplified());
+        FourSideElementList.last().Controler = node.cap(1).simplified();
         pos += node.matchedLength();
     }
 
     if ((pos = value.indexIn(Source, pos)) != -1)
     { // grep value of element
-        FourSideElementList.last().ValueInString = value.cap(1);
+        FourSideElementList.last().ValueInString = value.cap(1).simplified();
         FourSideElementList.last().value = StringToNum(FourSideElementList.last().ValueInString);
         pos += value.matchedLength();
     }
@@ -496,10 +518,10 @@ bool circuit::AddCCVS(QString Source, QString next) // H
     {
         if ((pos_next = srcNode.indexIn(next, pos_next)) != -1)
         { // add new nodes into nodelist
-            if (!MatrixOrder.contains(srcNode.cap(1)))
-                MatrixOrder.insert(srcNode.cap(1), MatrixOrder.size());
-            NodesName.insert(srcNode.cap(1));
-            FourSideElementList.last().Nodes[i] = srcNode.cap(1);
+            if (!MatrixOrder.contains(srcNode.cap(1).simplified()))
+                MatrixOrder.insert(srcNode.cap(1).simplified(), MatrixOrder.size());
+            NodesName.insert(srcNode.cap(1).simplified());
+            FourSideElementList.last().Nodes[i] = srcNode.cap(1).simplified();
             pos_next += srcNode.matchedLength();
         }
     }
@@ -525,116 +547,19 @@ QStringList circuit::printNodesInfo()
 }
 void circuit::AddCommand(QString Command)
 {
-    CommandList.enqueue(Command);
+    CommandList.push_back(Command);
 }
 
-int Unittype(QChar unitIn)
-{
-    if (unitIn == 'F' || unitIn == 'f')
-        return UNIT_Ff;
-    else if (unitIn == 'P' || unitIn == 'p')
-        return UNIT_Pp;
-    else if (unitIn == 'N' || unitIn == 'n')
-        return UNIT_Nn;
-    else if (unitIn == 'U' || unitIn == 'u')
-        return UNIT_Uu;
-    else if (unitIn == 'M' || unitIn == 'm')
-        return UNIT_Mm;
-    else if (unitIn == 'K' || unitIn == 'k')
-        return UNIT_Kk;
-    else if (unitIn == 'G' || unitIn == 'g')
-        return UNIT_Gg;
-    else if (unitIn == 'T' || unitIn == 't')
-        return UNIT_Tt;
-    else
-        return 777;
-}
 
-double StringToNum(QString str)
-{
-    QRegExp PureNum("(\\d*(.)?\\d+)");
-    QRegExp WithUnit("(\\d*(.)?\\d+([FfTtpPnNuUmMkK]|(Meg)))");
-    QRegExp Scientific("(\\d+.?\\d*(e|(e-))\\d*)");
-    if (PureNum.exactMatch(str))
-    {
-        bool flag;
-        double num = str.toDouble(&flag);
-        if (flag)
-        {
-            return num;
-        }
-        else
-        {
-            qDebug() << "Error:Fail To Transform string to num";
-            return 0;
-        }
-    }
-    else if (WithUnit.exactMatch(str))
-    {
-        QChar unit = str[str.size() - 1];
-        // qDebug() << str.right(3);
-        bool isMeg = (str.right(3) == "Meg");
-        bool flag;
-        // qDebug() << isMeg;
-        //	int Type = Unittype(unit);
-        // qDebug() << "Unit is :" << unit;
-        if (isMeg)
-        {
-            return str.left(str.size() - 3).toDouble(&flag) * 1000000;
-        }
-        int Type = Unittype(unit);
-        QString WithoutUnit = str.left(str.size() - 1);
-        double value = WithoutUnit.toDouble(&flag);
-        // qDebug() << "Num is :" << WithoutUnit;
-        switch (Type)
-        {
-        case UNIT_Ff:
-            return value * 0.000000000000001;
 
-        case UNIT_Pp:
-            return value * 0.000000000001;
-
-        case UNIT_Nn:
-            return value * 0.000000001;
-
-        case UNIT_Uu:
-            return value * 0.000001;
-
-        case UNIT_Mm:
-            return value * 0.001;
-
-        case UNIT_Kk:
-            return value * 1000;
-        case UNIT_Gg:
-            return value * 1000000000;
-
-        case UNIT_Tt:
-            return value * 1000000000000;
-        default:
-            return 0;
-        }
-
-        return 0;
-    }
-    else if (Scientific.exactMatch(str))
-    {
-        int pos = str.lastIndexOf('e');
-        bool flag;
-        // qDebug() << pos;
-        // qDebug() << str.left(pos);
-        // qDebug() << str.right(str.size() - pos - 1);
-        double value = str.left(pos).toDouble(&flag);
-        double exponent = str.right(str.size() - pos - 1).toDouble();
-        return value * pow(10, exponent);
-    }
-    else
-        return 0;
-}
 
 cx_mat circuit::GenerateDcStamp(double f)
 {
     int n = MatrixOrder.size();
-
+    // printNodesInfo();
+    // printTwoSideElement();
+    // printFourSideElement();
+    qDebug()<<"Matrix size:"<<n;
     mat real(n, n);
     mat imag(n, n);
     cx_mat stamp(n, n);
@@ -737,12 +662,397 @@ cx_mat circuit::GenerateDcStamp(double f)
     stamp.set_real(real);
     stamp.set_imag(imag);
     real.print("stamp:");
+    qDebug()<<"ABS of stamp:"<<det(real);
 
     RHS.print("RHS:");
-    qDebug() << "I_Vin" << MatrixOrder["I_" + TwoSideElementList[0].Name];
+ //   qDebug() << "I_Vin" << MatrixOrder["I_" + TwoSideElementList[0].Name];
     return join_horiz(stamp, RHS);
 }
 
+cx_mat circuit::GenerateAcStamp(double f)
+{
+    int n = MatrixOrder.size();
+    // printNodesInfo();
+    // printTwoSideElement();
+    // printFourSideElement();
+    qDebug()<<"Matrix size:"<<n;
+    mat real(n, n);
+    mat imag(n, n);
+    cx_mat stamp(n, n);
+    cx_mat RHS(n, 1);
+    real.zeros();
+    imag.zeros();
+    RHS.zeros();
+    foreach (const TwoSideElement &element, TwoSideElementList)
+    {
+        switch (element.type)
+        {
+        case 'r':
+        { // resistor
+            real(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[0]]) += 1 / element.value;
+            real(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[1]]) += -1 / element.value;
+            real(MatrixOrder[element.Nodes[1]], MatrixOrder[element.Nodes[0]]) += -1 / element.value;
+            real(MatrixOrder[element.Nodes[1]], MatrixOrder[element.Nodes[1]]) += 1 / element.value;
+            break;
+        }
+        case 'v':
+        { // voltage source
+            real(MatrixOrder[element.Nodes[0]], MatrixOrder["I_" + element.Name]) += 1;
+            real(MatrixOrder[element.Nodes[1]], MatrixOrder["I_" + element.Name]) += -1;
+            real(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[0]]) += 1;
+            real(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[1]]) += -1;
+            RHS(MatrixOrder["I_" + element.Name], 0) += element.value;
+            break;
+        }
+        case 'i':
+        { // current source
+            RHS(MatrixOrder[element.Nodes[0]], 0) += -element.value;
+            RHS(MatrixOrder[element.Nodes[0]], 0) += element.value;
+            break;
+        }
+        case 'l':
+        { // inductance
+            real(MatrixOrder[element.Nodes[0]], MatrixOrder["I_" + element.Name]) += 1;
+            real(MatrixOrder[element.Nodes[1]], MatrixOrder["I_" + element.Name]) += -1;
+            real(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[0]]) += 1;
+            real(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[1]]) += -1;
+            imag(MatrixOrder["I_" + element.Name], MatrixOrder["I_" + element.Name]) += -2 * datum::pi * f * element.value;
+            break;
+        }
+        case 'c':
+        { // capacitor
+            imag(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[0]]) += 2 * datum::pi * f * element.value;
+            imag(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[1]]) += -2 * datum::pi * f * element.value;
+            imag(MatrixOrder[element.Nodes[1]], MatrixOrder[element.Nodes[0]]) += -2 * datum::pi * f * element.value;
+            imag(MatrixOrder[element.Nodes[1]], MatrixOrder[element.Nodes[1]]) += 2 * datum::pi * f * element.value;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+    foreach (const FourSideElement &element, FourSideElementList)
+    {
+        switch (element.type)
+        {
+        case 'G':
+        { // VCCS
+            real(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[2]]) += element.value;
+            real(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[3]]) += -element.value;
+            real(MatrixOrder[element.Nodes[1]], MatrixOrder[element.Nodes[2]]) += -element.value;
+            real(MatrixOrder[element.Nodes[1]], MatrixOrder[element.Nodes[3]]) += element.value;
+            break;
+        }
+        case 'E':
+        { // VCVS
+            real(MatrixOrder[element.Nodes[0]], MatrixOrder["I_" + element.Name]) += 1;
+            real(MatrixOrder[element.Nodes[1]], MatrixOrder["I_" + element.Name]) += -1;
+            real(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[0]]) += 1;
+            real(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[1]]) += -1;
+            real(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[2]]) += -element.value;
+            real(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[3]]) += element.value;
+            break;
+        }
+        case 'F':
+        { // CCCS
+            real(MatrixOrder[element.Nodes[0]], MatrixOrder["I_" + element.Controler]) += element.value;
+            real(MatrixOrder[element.Nodes[1]], MatrixOrder["I_" + element.Controler]) += -element.value;
+            real(MatrixOrder[element.Nodes[2]], MatrixOrder["I_" + element.Controler]) += 1;
+            real(MatrixOrder[element.Nodes[3]], MatrixOrder["I_" + element.Controler]) += -1;
+            break;
+        }
+        case 'H':
+        { // CCVS
+            real(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[0]]) += 1;
+            real(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[1]]) += -1;
+            real(MatrixOrder["I_" + element.Name], MatrixOrder["I_" + element.Controler]) += -element.value;
+            real(MatrixOrder[element.Nodes[0]], MatrixOrder["I_" + element.Name]) += 1;
+            real(MatrixOrder[element.Nodes[0]], MatrixOrder["I_" + element.Name]) += -1;
+            break;
+        }
+        default:
+            break;
+        }
+    }
+
+    stamp.set_real(real);
+    stamp.set_imag(imag);
+   // real.print("stamp:");
+    //qDebug()<<"ABS of stamp:"<<det(real);
+
+    //RHS.print("RHS:");
+ //   qDebug() << "I_Vin" << MatrixOrder["I_" + TwoSideElementList[0].Name];
+    return join_horiz(stamp, RHS);
+}
+
+bool IsDcCommand(QString str){
+    QRegExp DC("([.][Dd][Cc])");
+    int pos = 0;
+    if ((pos = DC.indexIn(str, pos)) != -1)
+    {
+        return true;
+    }
+    else    
+        return false;
+}
+
+bool IsAcCommand(QString str){
+    QRegExp AC("([.][Aa][Cc])");
+    int pos = 0;
+    if ((pos = AC.indexIn(str, pos)) != -1)
+    {
+        return true;
+    }
+    else    
+        return false;
+}
+
+bool IsPlot(QString str){
+    QRegExp plot("([.][Pp][Ll][Oo][Tt])");
+    int pos = 0;
+    if ((pos = plot.indexIn(str, pos)) != -1)
+    {
+        return true;
+    }
+    else    
+        return false;
+}
+
+void circuit::CommandParse(){
+    foreach(const QString &value,CommandList){
+        if(IsDcCommand(value)){
+            DCAanlyze(value);
+        }
+        if(IsAcCommand(value)){
+            qDebug()<<"grep an ac command";
+            struct ACInFo *ACInFo = ParseACInFo(value);
+            ACAanlyze(ACInFo);
+        }
+        if(IsPlot(value)){
+            ParsePlotInfo(value);
+        }
+    }
+}
+
+void circuit::ACAanlyze(struct ACInFo* ACInFo){
+    setReferenceNode();
+    int index = MatrixOrder[ReferenceNode];
+    switch (ACInFo->sweep_type)
+    {
+    case 'd':
+        {
+            qDebug()<<"AC DEC analysis";
+            struct AC_result *result = new(struct AC_result);          
+            for (double f = ACInFo->start; f < ACInFo->stop; f*=10)
+            {
+                double l_start = f;
+                double l_stop = f*10;
+                double step;
+                if(ACInFo->sweep_nums==1)
+                    step = l_stop-l_start;
+                else
+                    step = (l_stop-l_start)/(ACInFo->sweep_nums-1);
+                for (double i = l_start; i <l_stop ; i+=step)
+                {
+                    qDebug()<<"f:"<<i;
+                    cx_mat stamp = GenerateAcStamp(i);
+                    stamp.print("stamp:");
+                    cx_mat answer = solveAC(stamp,index);
+                    //amendAnswer_AC(answer);
+                    answer.print("answer:");
+                    SaveACAnswer(i,answer,result);
+                }
+            }    
+            result->cols = result->FrequencyList.size();
+            result->rows = MatrixOrder.size();
+            AC_result = result;   
+            break;
+        }
+    default:
+        break;
+    }
+}
+
+
+void circuit::DCAanlyze(QString str)
+{
+    setReferenceNode();
+    int index = MatrixOrder[ReferenceNode];
+    QRegExp Sourcename("([^.DdCc\\s]\\w+)");
+    QRegExp Value("(\\d*[.]?\\d+)");
+    int pos = 0;
+    double start,stop,step;
+    QString Name;
+    mat temp = real(GenerateDcStamp(0));
+    if ((pos = Sourcename.indexIn(str, pos)) != -1)
+	{
+		Name = Sourcename.cap(1).simplified();
+        pos += Sourcename.matchedLength();
+        
+	}
+    else{
+        qDebug()<<"Fail to parse DC Command!";
+        return;
+    }
+
+    if ((pos = Value.indexIn(str, pos)) != -1)
+	{
+		start = StringToNum(Value.cap(1).simplified());
+        pos += Value.matchedLength();
+	}
+    else{
+        qDebug()<<"Fail to parse DC Command!";
+        return;
+    }
+
+    if ((pos = Value.indexIn(str, pos)) != -1)
+	{
+		stop = StringToNum(Value.cap(1).simplified());
+        pos += Value.matchedLength();
+	}
+    else{
+        qDebug()<<"Fail to parse DC Command!";
+        return;
+    }
+
+    if ((pos = Value.indexIn(str, pos)) != -1)
+	{
+		step = StringToNum(Value.cap(1).simplified());
+        pos += Value.matchedLength();
+	}
+    else{
+        qDebug()<<"Fail to parse DC Command!";
+        return;
+    }
+    int n = (start==stop)? 1:int((stop-start)/step);
+    struct DC_result  *result=new struct DC_result(start,stop,step,MatrixOrder.size()+1,n);  
+    for(double v=start;v<stop;v+=step){
+        qDebug()<<"Name:"<<Name;
+        UpdateDCStamp_Vsource(v,Name,temp);
+        mat answer = solveDC(temp,index);
+        temp.print("temp:");
+        //amendAnswer_DC(answer);
+        answer.print("Answer:");
+        SaveDCAnswer(answer,result);
+    }
+    DC_result = result;
+    return;
+}
+
+
+void circuit::UpdateDCStamp_Vsource(double v,QString Name, mat &stamp){
+    printNodesInfo();
+    int m = MatrixOrder["I_"+Name];
+    int n = stamp.n_cols;
+    stamp(m,n-1) = v;
+}
+
+
+void circuit::ParsePlotInfo(QString str){
+    QRegExp DC("([Dd][Cc])");
+    QRegExp AC("([Aa][Cc])");
+    QRegExp tran("([Tt][Rr][Aa][Nn])");
+    QRegExp Name("(\\(\\w+\\))");
+    QString VariableName;
+
+    int pos_DC = 0;
+    int pos_AC = 0;
+    int pos_TRAN = 0;
+    if ((pos_DC = DC.indexIn(str, pos_DC)) != -1)
+	{
+        pos_DC += DC.matchedLength();
+
+        if ((pos_DC = Name.indexIn(str, pos_DC)) != -1)
+        {
+            QString temp = Name.cap(1).simplified();
+            VariableName = temp.right(temp.size()-1);
+            VariableName = VariableName.left(VariableName.size()-1);
+            struct PlotInfo *plotinfo = new struct PlotInfo('d',VariableName);
+            PlotInfo = plotinfo;
+            return;
+        }
+        else{
+             qDebug()<<"Fail to parse Plot Command!";
+        }
+	}
+
+    else if ((pos_AC = AC.indexIn(str, pos_AC)) != -1)
+	{
+        pos_AC += AC.matchedLength();
+
+        if ((pos_AC = Name.indexIn(str, pos_AC)) != -1)
+        {
+            QString temp = Name.cap(1).simplified();
+            VariableName = temp.right(temp.size()-1);
+            VariableName = VariableName.left(VariableName.size()-1);
+            struct PlotInfo *plotinfo = new struct PlotInfo('a',VariableName);
+            PlotInfo = plotinfo;
+            return;
+        }
+        else{
+             qDebug()<<"Fail to parse Plot Command!";
+        }      
+	}
+
+    else if ((pos_TRAN = tran.indexIn(str, pos_TRAN)) != -1)
+	{
+        pos_TRAN += tran.matchedLength();
+
+        if ((pos_TRAN = Name.indexIn(str, pos_TRAN)) != -1)
+        {
+            QString temp = Name.cap(1).simplified();
+            VariableName = temp.right(temp.size()-1);
+            VariableName = VariableName.left(VariableName.size()-1);
+            struct PlotInfo *plotinfo = new struct PlotInfo('t',VariableName);
+            PlotInfo = plotinfo;
+            return;
+        }
+        else{
+             qDebug()<<"Fail to parse Plot Command!";
+        }      
+	}
+
+    else {
+        qDebug()<<"Fail to parse Plot Command!";
+    }
+    return;
+}
+
+
+void circuit::amendAnswer_DC(mat &answer){
+    int pos = MatrixOrder[ReferenceNode];
+    double delta = answer(pos);
+    QMap<QString, int>::iterator iter = MatrixOrder.begin();
+    while (iter != MatrixOrder.end())
+    {
+        if(iter.key()[0]!="I")
+            answer(iter.value())-=delta;
+        iter++;
+    }
+}
+
+void circuit::amendAnswer_AC(cx_mat &answer){
+    int pos = MatrixOrder[ReferenceNode];
+    cx_double delta = answer(5);
+    QMap<QString, int>::iterator iter = MatrixOrder.begin();
+    while (iter != MatrixOrder.end())
+    {
+        if(iter.key()[0]!="I"){
+            answer(iter.value())-=answer(pos);
+            answer(iter.value())/=delta;
+        }
+        iter++;
+    }
+}
+
+void circuit::setReferenceNode(){
+    if(NodesName.contains("gnd"))
+        ReferenceNode = "gnd";
+    else if(NodesName.contains("0"))
+        ReferenceNode = "0";
+    else 
+        return;
+}
 circuit::circuit(void)
 {
 }
