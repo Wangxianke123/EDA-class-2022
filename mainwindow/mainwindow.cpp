@@ -11,7 +11,7 @@
 
 #include "mainwindow.h"
 #include "cpp_tutorial/myWidget.h"
-#include "parser/circuit.h"
+#include "circuit/circuit.h"
 #include "parser/analyzer.h"
 #include "solver/solver.h"
 #include "plotter/qcustomplot.h"
@@ -291,11 +291,11 @@ void MainWindow::slotStamp()
     qDebug()<<MainCircuit->CommandList;
     MainCircuit->CommandParse();
     QStringList content;
-    cx_mat A = MainCircuit->GenerateDcStamp(1);
+    mat A = MainCircuit->GenerateDcStamp();
     content << "Here is the stamp of circuit:";
-    content = content + printMatrix(A.submat(arma::span(0, A.n_rows - 1), arma::span(0, A.n_cols - 2)));
+    content = content + printMatrix(A.cols(0,A.n_cols-2));
     content << "RHS:";
-    content = content + printMatrix(A.submat(arma::span(0, A.n_rows - 1), arma::span(A.n_cols - 1, A.n_cols - 1)));
+    content = content + printMatrix(A.col(A.n_cols-1));
     label->setText(content.join('\n'));
 
     label->setAlignment(Qt::AlignCenter);
@@ -306,10 +306,10 @@ void MainWindow::slotStamp()
 
 void MainWindow::slotPlot()
 {
-    if (MainCircuit->PlotInfo == nullptr){
+    if (MainCircuit->PlotInFo == nullptr){
         return;
     }
-    switch (MainCircuit->PlotInfo->type)
+    switch (MainCircuit->PlotInFo->type)
     {
     case 'd':{
         QVector<double> x,y;
@@ -318,7 +318,7 @@ void MainWindow::slotPlot()
         stop = MainCircuit->DC_result->stop;
         step = MainCircuit->DC_result->step;
         int n = MainCircuit->DC_result->answer_table.size();
-        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInfo->VariableName];
+        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInFo->VariableName];
         qDebug()<<"pos:"<<pos;
         for (int i = 0; i < n; i++)
         {
@@ -331,19 +331,20 @@ void MainWindow::slotPlot()
         customPlot->graph(0)->setData(x, y);
         // give the axes some labels:
         customPlot->xAxis->setLabel("Vsrc");
-        customPlot->yAxis->setLabel("V"+ MainCircuit->PlotInfo->VariableName);
+        customPlot->yAxis->setLabel("V"+ MainCircuit->PlotInFo->VariableName);
         qDebug()<<"begin:"<<*y.begin()<<"end:"<<*y.end();
         // set axes ranges, so we see all data:
         customPlot->xAxis->setRange(start, stop);
         customPlot->yAxis->setRange(*y.begin(), *(y.end()-1));
         customPlot->replot();
+        customPlot->setMinimumSize(450, 300);
         customPlot->show();
         return;
         break;
     }
     case 'a':{
         QVector<double> freqData,dBMagData,phaseData;
-        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInfo->VariableName];
+        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInFo->VariableName];
         int n = MainCircuit->AC_result->cols;
          for (int i = 0; i < n; i++)
         {
@@ -376,8 +377,38 @@ void MainWindow::slotPlot()
         custPlot->setMinimumSize(450, 300);
         custPlot->show();
     }
+    case 't':{
+        QVector<double> x,y;
+        int n = MainCircuit->Tran_result->TimeList.size();
+        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInFo->VariableName];
+        qDebug()<<"pos:"<<pos;
+        for (int i = 0; i < n; i++)
+        {
+            x.push_back(MainCircuit->Tran_result->TimeList[i]);
+            y.push_back(MainCircuit->Tran_result->ValueList[i][pos]);
+        }
+        QCustomPlot *customPlot = new QCustomPlot();
+        customPlot->addGraph();
+        customPlot->graph(0)->setData(x, y);
+        // give the axes some labels:
+        customPlot->xAxis->setLabel("Vsrc");
+        customPlot->yAxis->setLabel("V"+ MainCircuit->PlotInFo->VariableName);
+        qDebug()<<"begin:"<<*y.begin()<<"end:"<<*y.end();
+        // set axes ranges, so we see all data:
+        double x_max = *std::max_element(x.begin(),x.end());
+	    double x_min = *std::min_element(x.begin(),x.end());
+        double y_max = *std::max_element(y.begin(),y.end());
+	    double y_min = *std::min_element(y.begin(),y.end());
+
+        customPlot->xAxis->setRange(x_min, x_max);
+        customPlot->yAxis->setRange(y_min, y_max);
+        customPlot->replot();
+        customPlot->setMinimumSize(450, 300);
+        customPlot->show();
+        return;
+        break;
+    }
     default:
         break;
     }
-   
 }

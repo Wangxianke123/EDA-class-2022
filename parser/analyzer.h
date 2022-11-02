@@ -10,6 +10,7 @@
 #include <math.h>
 #include <armadillo>
 #include"circuit.h"
+#include"element/element.h"
 
 using namespace arma;
 //  different return type of analyzer
@@ -40,7 +41,17 @@ using namespace arma;
 #define UNIT_Gg 107
 #define UNIT_Tt 108
 
-struct ACInFo{
+
+
+struct DCInFo
+{
+    QString Name;
+    double start;
+    double stop;
+    double step;
+};
+struct ACInFo
+{
     //QString SourceName;
     char sweep_type;
     int  sweep_nums;
@@ -51,6 +62,18 @@ struct ACInFo{
     int  sweep_nums,
     double start,
     double stop) : sweep_type(sweep_type),sweep_nums(sweep_nums),start(start),stop(stop){};
+};
+
+struct TranInFo{
+    double t_step;
+    double t_stop;
+    TranInFo(){};
+};
+
+struct PlotInFo{
+    char type;
+    QString VariableName;
+    PlotInFo(char type, QString VariableName) : type(type),VariableName(VariableName){};
 };
 
 int analyze(QString str, int line);
@@ -70,13 +93,29 @@ bool IsVCVS(QString str);
 bool IsCCCS(QString str);
 bool IsCCVS(QString str);
 
+
+bool IsDcCommand(QString str);
+bool IsAcCommand(QString str);
+bool IsTranCommand(QString str);
+bool IsPlot(QString str);
+
+
 int Unittype(QChar unitIn);
 double StringToNum(QString str);
 QString ReadNetlist(QString Netlist);
 QStringList ReadNetlistByLine(QString FineName);
 QStringList printMatrix(cx_mat A);
+QStringList printMatrix(mat A);
 QStringList printReal(cx_mat A);
-struct ACInFo* ParseACInFo(QString str);
 
+struct DCInFo* ParseDCInFo(QString str);
+struct ACInFo* ParseACInFo(QString str);
+struct PlotInFo* ParsePlotInFo(QString str);
+struct TranInFo* ParseTranInFo(QString str);
+
+struct VSource* ParseVsource(QString str); 
+struct DynamicElement* ParseDynamic(QString str);
+struct StaticElement* ParseStatic(QString str);
+struct Dependent* ParseDependent(QString str);
 
 #endif

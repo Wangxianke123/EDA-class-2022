@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = EDA_wenkai
+TARGET = EDA_new
 INCLUDEPATH += .
 
 LIBS += -larmadillo
@@ -22,18 +22,20 @@ RCC_DIR     = build
 UI_DIR      = build
 
 # Input
-HEADERS +=  parser/circuit.h    \
+HEADERS +=  circuit/circuit.h    \
             parser/analyzer.h  \
             mainwindow/mainwindow.h \
             cpp_tutorial/myWidget.h \
             solver/solver.h \
-            plotter/qcustomplot.h
+            plotter/qcustomplot.h \
+            element/element.h
 
 SOURCES +=  main.cpp            \
-            parser/circuit.cpp   \
-             parser/analyzer.cpp  \
+            circuit/circuit.cpp   \
+            parser/analyzer.cpp  \
             mainwindow/mainwindow.cpp   \
             cpp_tutorial/myWidget.cpp   \
             solver/solver.cpp   \
-            plotter/qcustomplot.cpp
+            plotter/qcustomplot.cpp \
+            element/element.cpp
 

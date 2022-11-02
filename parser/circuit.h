@@ -85,6 +85,15 @@ public:
     bool AddVCVS(QString Source);
     bool AddCCCS(QString Source, QString next);
     bool AddCCVS(QString Source, QString next);
+
+
+
+    bool addVSource(struct VSource* source);
+    bool addDynamic(struct DynamicElement* element);
+    bool addStatic(struct StaticElement* element);
+    bool addDependent(struct DependentElement* element);
+
+
     bool ComposeDcCommand(QString);
 
     void AddCommand(QString Command);

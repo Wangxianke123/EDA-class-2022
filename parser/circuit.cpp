@@ -785,39 +785,6 @@ cx_mat circuit::GenerateAcStamp(double f)
     return join_horiz(stamp, RHS);
 }
 
-bool IsDcCommand(QString str){
-    QRegExp DC("([.][Dd][Cc])");
-    int pos = 0;
-    if ((pos = DC.indexIn(str, pos)) != -1)
-    {
-        return true;
-    }
-    else    
-        return false;
-}
-
-bool IsAcCommand(QString str){
-    QRegExp AC("([.][Aa][Cc])");
-    int pos = 0;
-    if ((pos = AC.indexIn(str, pos)) != -1)
-    {
-        return true;
-    }
-    else    
-        return false;
-}
-
-bool IsPlot(QString str){
-    QRegExp plot("([.][Pp][Ll][Oo][Tt])");
-    int pos = 0;
-    if ((pos = plot.indexIn(str, pos)) != -1)
-    {
-        return true;
-    }
-    else    
-        return false;
-}
-
 void circuit::CommandParse(){
     foreach(const QString &value,CommandList){
         if(IsDcCommand(value)){

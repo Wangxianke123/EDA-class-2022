@@ -1,24 +1,14 @@
-TestBench4 for Homework4
-* 2022 EDA course testbench netlist
-* 2022-10-17
-* Origin: From Qixu Xie's Small Signal Model - AC Test
+TA-session-5-ckt-4
+* TestBench 4 for Homework 5, 2022 EDA course. 
+* Author    : Hao Limin
+* Date      : 2022/10/25
+* Info      : LC oscillation.
 
-Vin in gnd  AC 1
-Cin in gnd 1p
+C1 1 0 1
+L1 1 0 1
+R1 1 2 1
+V1 2 0 PULSE (0 1 1 1 1 1 15)
 
-*first stage
-Gm1 out1 gnd in gnd 160.6u
-R1 out1 gnd 0.75Meg
-C1 out1 gnd 619f
-
-*compensation capacitor
-Cc out1 out2 1p
-
-*second stage
-Gm2 out2 gnd out1 gnd 995u
-R2 out2 gnd 99.47K
-C2 out2 gnd 5p
-
-.AC DEC 10 1 1000Meg
-*.plot ac vdec(out2) vp(out2)
+.tran 0.1 30
+.plot TRAN v(1)
 .end

@@ -15,7 +15,7 @@
 #include <QDebug>
 #include <QTextDocument>
 #include <QSplitter>
-#include "parser/circuit.h"
+#include "circuit/circuit.h"
 
 class QAction;
 class QMenu;

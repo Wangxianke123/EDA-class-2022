@@ -10,6 +10,7 @@ mat solveDC(mat stamp, int pos){
     temp.zeros();
     temp(pos)=1;
     stamp.insert_rows(m,temp);
+    stamp.print("stamp:");
     if(solve(x,stamp.cols(0,n-2),stamp.col(n-1)))
         return x;
     else{
@@ -50,4 +51,14 @@ cx_mat solveAC(cx_mat stamp,int pos){
         qDebug()<<"Error:There's something worng when solving stamp!";
         return x.zeros();
     }
+}
+
+bool SaveTranAnswer(double time,mat answer,struct Tran_result* result)
+{
+
+    qDebug()<<"Saving answer at time:"<<time;
+    result->TimeList.push_back(time);
+    std::vector<double> temp = conv_to<std::vector<double>>::from(answer);
+    result->ValueList.push_back(temp);
+    return true;
 }

@@ -1,45 +1,39 @@
 #Start parsing netlist ...
 #grep an annotation:
-* TestBench 2 for Homework 5, 2022 EDA course.
+* TestBench 4 for Homework 5, 2022 EDA course. 
 #grep an annotation:
 * Author    : Hao Limin
 #grep an annotation:
-* Date      : 2022/10/25.
+* Date      : 2022/10/25
 #grep an annotation:
-* Info      : RLC filter.
-#grep a resistor:
-R1 1 0 1k
-#grep a resistor:
-R2 3 2 1
+* Info      : LC oscillation.
 #grep an inductance:
-L1 4 3 100u
+L1 1 0 1
+#grep a resistor:
+R1 1 2 1
 #grep a source:
-V1 4 0 AC 1
+V1 2 0 PULSE (0 1 1 1 1 1 15)
 #grep a command:
-.AC DEC 10 1 100MEG
+.tran 0.1 30
 #grep a command:
-.plot AC vm(1)
+.plot TRAN v(1)
 #grep a command:
 .end
 Here's the result of parser:
 -----------------------------------------------------
 Title:
-TA-session-5-ckt-2
-Nodes:5
+TA-session-5-ckt-4
+Nodes:3
 Devices:4
-Resistor:2	Capacitor:1	Inductance:1
+Resistor:1	Capacitor:1	Inductance:1
 Vsrc:1
-Controled src:0
-Name:R1		Value:1000		Node1:1		Node2:0
-Name:C1		Value:0.0001		Node1:2		Node2:1
-Name:R2		Value:1		Node1:3		Node2:2
-Name:L1		Value:0.0001		Node1:4		Node2:3
-Name:V1		Value:1		Node1:4		Node2:0
+Name:C1		Value:1		Node1:1		Node2:0
+Name:L1		Value:1		Node1:1		Node2:0
+Name:R1		Value:1		Node1:1		Node2:2
+Name:V1		Value:0		Node1:2		Node2:0
 -----------------------------------------------------
 name:	0	 row/col number in matrix:	1
 name:	1	 row/col number in matrix:	0
-name:	2	 row/col number in matrix:	2
-name:	3	 row/col number in matrix:	3
-name:	4	 row/col number in matrix:	5
-name:	I_L1	 row/col number in matrix:	4
-name:	I_V1	 row/col number in matrix:	6
+name:	2	 row/col number in matrix:	3
+name:	I_L1	 row/col number in matrix:	2
+name:	I_V1	 row/col number in matrix:	4
