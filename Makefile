@@ -59,7 +59,8 @@ SOURCES       = main.cpp \
 		cpp_tutorial/myWidget.cpp \
 		solver/solver.cpp \
 		plotter/qcustomplot.cpp \
-		element/element.cpp build/moc_mainwindow.cpp \
+		element/element.cpp build/qrc_mainwindow.cpp \
+		build/moc_mainwindow.cpp \
 		build/moc_myWidget.cpp \
 		build/moc_qcustomplot.cpp
 OBJECTS       = build/main.o \
@@ -70,6 +71,7 @@ OBJECTS       = build/main.o \
 		build/solver.o \
 		build/qcustomplot.o \
 		build/element.o \
+		build/qrc_mainwindow.o \
 		build/moc_mainwindow.o \
 		build/moc_myWidget.o \
 		build/moc_qcustomplot.o
@@ -252,7 +254,8 @@ Makefile: EDA_wenkai.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exceptions.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
-		EDA_wenkai.pro
+		EDA_wenkai.pro \
+		mainwindow/mainwindow.qrc
 	$(QMAKE) -o Makefile EDA_wenkai.pro
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf:
@@ -332,6 +335,7 @@ Makefile: EDA_wenkai.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.c
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf:
 EDA_wenkai.pro:
+mainwindow/mainwindow.qrc:
 qmake: FORCE
 	@$(QMAKE) -o Makefile EDA_wenkai.pro
 
@@ -346,6 +350,7 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
+	$(COPY_FILE) --parents mainwindow/mainwindow.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents circuit/circuit.h parser/analyzer.h mainwindow/mainwindow.h cpp_tutorial/myWidget.h solver/solver.h plotter/qcustomplot.h element/element.h $(DISTDIR)/
 	$(COPY_FILE) --parents main.cpp circuit/circuit.cpp parser/analyzer.cpp mainwindow/mainwindow.cpp cpp_tutorial/myWidget.cpp solver/solver.cpp plotter/qcustomplot.cpp element/element.cpp $(DISTDIR)/
@@ -372,8 +377,27 @@ check: first
 
 benchmark: first
 
-compiler_rcc_make_all:
+compiler_rcc_make_all: build/qrc_mainwindow.cpp
 compiler_rcc_clean:
+	-$(DEL_FILE) build/qrc_mainwindow.cpp
+build/qrc_mainwindow.cpp: mainwindow/mainwindow.qrc \
+		/usr/lib/qt5/bin/rcc \
+		mainwindow/images/filesave.png \
+		mainwindow/images/filesaveall.png \
+		mainwindow/images/stamp.png \
+		mainwindow/images/fileopen.png \
+		mainwindow/images/parse.png \
+		mainwindow/images/filenew.png \
+		mainwindow/images/editcut.png \
+		mainwindow/images/plotter.png \
+		mainwindow/images/editdelete.png \
+		mainwindow/images/editpaste.png \
+		mainwindow/images/filesaveas.png \
+		mainwindow/images/editcopy.png \
+		mainwindow/images/fileclose.png \
+		mainwindow/images/fileprint.png
+	/usr/lib/qt5/bin/rcc -name mainwindow mainwindow/mainwindow.qrc -o build/qrc_mainwindow.cpp
+
 compiler_moc_predefs_make_all: build/moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) build/moc_predefs.h
@@ -413,7 +437,7 @@ compiler_yacc_impl_make_all:
 compiler_yacc_impl_clean:
 compiler_lex_make_all:
 compiler_lex_clean:
-compiler_clean: compiler_moc_predefs_clean compiler_moc_header_clean 
+compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_header_clean 
 
 ####### Compile
 
@@ -457,6 +481,9 @@ build/qcustomplot.o: plotter/qcustomplot.cpp plotter/qcustomplot.h
 
 build/element.o: element/element.cpp element/element.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/element.o element/element.cpp
+
+build/qrc_mainwindow.o: build/qrc_mainwindow.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/qrc_mainwindow.o build/qrc_mainwindow.cpp
 
 build/moc_mainwindow.o: build/moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/moc_mainwindow.o build/moc_mainwindow.cpp

@@ -46,11 +46,11 @@ public:
     QVector<QString> CommandList;
     QString ReferenceNode;
 
-    struct DC_result* DC_result;
-    struct AC_result* AC_result;
-    struct Tran_result* Tran_result;
+    struct DC_result* DC_result = nullptr;
+    struct AC_result* AC_result = nullptr;
+    struct Tran_result* Tran_result = nullptr;
 
-    struct PlotInFo* PlotInFo;
+    struct PlotInFo* PlotInFo = nullptr;
 
 
     void getTitle(QString title);
@@ -66,7 +66,7 @@ public:
     void AddCommand(QString Command);
 
     void CommandParse();
-    struct DC_result* DCAanlyze(struct DCInFo* DCInFo);
+    void DCAanlyze(struct DCInFo* DCInFo);
     void ACAanlyze(struct ACInFo* ACInFo);
     void TranAanlyze(struct TranInFo* TranInFo);
 

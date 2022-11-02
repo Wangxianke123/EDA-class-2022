@@ -4,12 +4,12 @@
 
 circuit *parse(QString Netlist)
 {
-    QStringList list = Netlist.split('\n');
-    if (list.size() == 0)
+    if (Netlist.isEmpty())
     {
+        qDebug()<<"Error: Empty Netlist!";
         return nullptr;
     }
-    //    qDebug() << strRead;
+    QStringList list = Netlist.split('\n');
 
     circuit *newCircuit = new circuit;
     QStringList ParsedInfo;

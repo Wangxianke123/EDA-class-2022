@@ -39,3 +39,4 @@ SOURCES +=  main.cpp            \
             plotter/qcustomplot.cpp \
             element/element.cpp
 
+RESOURCES += mainwindow/mainwindow.qrc

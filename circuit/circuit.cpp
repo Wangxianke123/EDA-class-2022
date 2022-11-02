@@ -345,7 +345,7 @@ void circuit::CommandParse(){
 }
 
 
-struct DC_result* circuit::DCAanlyze(struct DCInFo* DCInFo)
+void circuit::DCAanlyze(struct DCInFo* DCInFo)
 {
     setReferenceNode();
     int index = MatrixOrder[ReferenceNode];
@@ -363,9 +363,11 @@ struct DC_result* circuit::DCAanlyze(struct DCInFo* DCInFo)
         answer.print("Answer:");
         SaveDCAnswer(answer,result);
     }
+    if(DC_result!=nullptr){
+        delete DC_result;
+    }
     DC_result = result;
     qDebug()<<"end dc analysis";
-    return result;
 }
 
 
@@ -400,6 +402,9 @@ void circuit::ACAanlyze(struct ACInFo* ACInFo){
             }    
             result->cols = result->FrequencyList.size();
             result->rows = MatrixOrder.size();
+            if(AC_result!=nullptr){
+                delete AC_result;
+            }
             AC_result = result;   
             break;
         }
@@ -435,6 +440,9 @@ void circuit::TranAanlyze(struct TranInFo* TranInFo)
         {
             break;
         }
+    }
+    if(Tran_result!=nullptr){
+        delete Tran_result;
     }
     Tran_result = result;
     return;
@@ -558,7 +566,32 @@ circuit::circuit(void)
     L_nums = 0;
     R_nums = 0;
     V_nums = 0;
+    DC_result = nullptr;
+    AC_result = nullptr;
+    Tran_result = nullptr;
+    PlotInFo = nullptr;
 }
 circuit::~circuit(void)
 {
+    if(DC_result!=nullptr)
+    {
+        delete DC_result;
+        DC_result = nullptr;
+    }
+    if(AC_result!=nullptr)
+    {
+        delete AC_result;
+        AC_result = nullptr;
+    }
+    if(Tran_result!=nullptr)
+    {
+        delete Tran_result;
+        Tran_result = nullptr;
+    }
+    if(PlotInFo!=nullptr)
+    {
+        delete PlotInFo;
+        PlotInFo = nullptr;
+    }
+
 }

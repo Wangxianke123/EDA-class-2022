@@ -58,6 +58,7 @@ public slots:
 private:
     QMenu *fileMenu;
     QMenu *editMenu;
+    QMenu *simulateMenu;
     QToolBar *fileTool;
     QToolBar *editTool;
 
@@ -84,7 +85,7 @@ private:
 
     QSplitter *splitterMainWindow;
 
-    circuit *MainCircuit;
+    circuit *MainCircuit = nullptr;
 };
 
 #endif // MAINWINDOW_H

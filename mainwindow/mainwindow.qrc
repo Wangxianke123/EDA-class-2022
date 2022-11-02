@@ -1,0 +1,18 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/editcopy.png</file>
+        <file>images/editcut.png</file>
+        <file>images/editdelete.png</file>
+        <file>images/editpaste.png</file>
+        <file>images/fileclose.png</file>
+        <file>images/filenew.png</file>
+        <file>images/fileopen.png</file>
+        <file>images/fileprint.png</file>
+        <file>images/filesave.png</file>
+        <file>images/filesaveall.png</file>
+        <file>images/filesaveas.png</file>
+        <file>images/parse.png</file>
+        <file>images/stamp.png</file>
+        <file>images/plotter.png</file>
+    </qresource>
+</RCC>

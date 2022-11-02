@@ -26,8 +26,7 @@
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
-    setWindowTitle(tr("MainWindow"));
-
+    setWindowTitle(tr("EDA Class 2022, WenKai"));
     splitterMainWindow = new QSplitter(Qt::Vertical, this);
     text = new QTextEdit(this);
     transcript = new QTextEdit(QStringLiteral("transcript"), this);
@@ -40,12 +39,16 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     createActions();
     createMenus();
     createToolBars();
-
     resize(800, 600);
 }
 
 MainWindow::~MainWindow()
 {
+    if(MainCircuit!=nullptr)
+    {
+        delete MainCircuit;
+        MainCircuit = nullptr;
+    }
 }
 
 /**
@@ -95,23 +98,27 @@ void MainWindow::createActions()
     connect(pasteAction, SIGNAL(triggered()), text, SLOT(paste()));
 
    
-    parserAction = new QAction(tr("Parser"), this);
-    parserAction->setToolTip(tr("Parser"));
+    parserAction = new QAction(QIcon(":/images/parse.png"),tr("Parser"), this);
+    parserAction->setToolTip(tr("Parse the circuit infomation from netlist"));
     connect(parserAction, SIGNAL(triggered()), this, SLOT(slotParser()));
 
-    stampAction = new QAction(tr("Stamp"), this);
-    stampAction->setToolTip(tr("Stamp"));
+    stampAction = new QAction(QIcon(":/images/stamp.png"),tr("Stamp"), this);
+    stampAction->setToolTip(tr("analyze the circuit and show the stamp"));
     connect(stampAction, SIGNAL(triggered()), this, SLOT(slotStamp()));
+    stampAction->setDisabled(true);
 
-    plotAction = new QAction(tr("Plot"), this);
-    plotAction->setToolTip(tr("Plot"));
+    plotAction = new QAction(QIcon(":/images/plotter.png"), tr("Plot"), this);
+    plotAction->setToolTip(tr("Plot the result of analysis"));
+    plotAction->setDisabled(true);
     connect(plotAction, SIGNAL(triggered()), this, SLOT(slotPlot()));
+
 }
 
 void MainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("File"));
     editMenu = menuBar()->addMenu(tr("Edit"));
+    simulateMenu = menuBar()->addMenu(tr("simulate"));
 
     fileMenu->addAction(fileNewAction);
     fileMenu->addSeparator(); /// Add separator between 2 actions.
@@ -121,12 +128,26 @@ void MainWindow::createMenus()
     editMenu->addAction(copyAction);
     editMenu->addAction(cutAction);
     editMenu->addAction(pasteAction);
+
+    simulateMenu->addAction(parserAction);
+    simulateMenu->addAction(stampAction);
+    simulateMenu->addAction(plotAction);
 }
 
 void MainWindow::createToolBars()
 {
+
+    fileTool = addToolBar(tr("File"));
+    editTool = addToolBar(tr("Edit"));
     demoTool = addToolBar(tr("demo"));
 
+    fileTool->addAction(fileNewAction);
+    fileTool->addAction(fileOpenAction);
+    fileTool->addAction(fileSaveAction);
+
+    editTool->addAction(copyAction);
+    editTool->addAction(cutAction);
+    editTool->addAction(pasteAction);
 
     demoTool->addAction(parserAction);
     demoTool->addAction(stampAction);
@@ -147,8 +168,14 @@ void MainWindow::slotNewFile()
 void MainWindow::slotParser()
 {
     QString netList = text->toPlainText();
+    if(MainCircuit!=nullptr)
+        delete MainCircuit;
     MainCircuit = parse(netList);
-    // transcript->setPlainText(ParseResult);
+    if(MainCircuit == nullptr)
+    {
+        QMessageBox::warning(this, tr("Error"), tr("Can not parse an empty Netlist!"));
+        return;
+    }
     QFile file("transcript");
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -172,6 +199,10 @@ void MainWindow::slotParser()
             file.close();
         }
     }
+    if(stampAction!=nullptr)
+        stampAction->setDisabled(false);
+    return;
+
 }
 /**
  * @brief Open action will open the saved files .
@@ -301,6 +332,9 @@ void MainWindow::slotStamp()
     label->setAlignment(Qt::AlignCenter);
     label->resize(400, 300);
     label->show();
+    if(plotAction!=nullptr)
+        plotAction->setDisabled(false);
+
 }
 
 
@@ -330,8 +364,10 @@ void MainWindow::slotPlot()
         customPlot->addGraph();
         customPlot->graph(0)->setData(x, y);
         // give the axes some labels:
-        customPlot->xAxis->setLabel("Vsrc");
-        customPlot->yAxis->setLabel("V"+ MainCircuit->PlotInFo->VariableName);
+        QString XName = MainCircuit->VSourceList[0].Name+"/V";
+        QString YName = "v(" + MainCircuit->PlotInFo->VariableName + ")/V";
+        customPlot->xAxis->setLabel(XName);
+        customPlot->yAxis->setLabel(YName);
         qDebug()<<"begin:"<<*y.begin()<<"end:"<<*y.end();
         // set axes ranges, so we see all data:
         customPlot->xAxis->setRange(start, stop);
@@ -360,22 +396,17 @@ void MainWindow::slotPlot()
         custPlot->graph(0)->setData(freqData, dBMagData);
         custPlot->graph(0)->rescaleAxes();
 
-        custPlot->xAxis->setLabel("Freq");
+        custPlot->xAxis->setLabel("Freq/Hz");
         QSharedPointer<QCPAxisTickerLog> logTicker(new QCPAxisTickerLog);
         custPlot->xAxis->setTicker(logTicker);
         custPlot->xAxis->setScaleType(QCPAxis::stLogarithmic);
+        QString YName = "Magnitude of ("+ MainCircuit->PlotInFo->VariableName +")";
         custPlot->yAxis->setLabel("M");
-
-        // custPlot->addGraph(custPlot->xAxis, custPlot->yAxis2);
-        // custPlot->graph(1)->setPen(QPen(Qt::red));
-        // custPlot->graph(1)->setData(freqData, phaseData);
-        // custPlot->graph(1)->rescaleAxes(true);
-        // custPlot->yAxis2->setLabel("Phase");
-        // custPlot->yAxis2->setVisible(true);
-
         custPlot->replot();
         custPlot->setMinimumSize(450, 300);
         custPlot->show();
+        return;
+        break;
     }
     case 't':{
         QVector<double> x,y;
@@ -391,8 +422,10 @@ void MainWindow::slotPlot()
         customPlot->addGraph();
         customPlot->graph(0)->setData(x, y);
         // give the axes some labels:
-        customPlot->xAxis->setLabel("Vsrc");
-        customPlot->yAxis->setLabel("V"+ MainCircuit->PlotInFo->VariableName);
+        QString XName = "Time/s";
+        QString YName = "v(" + MainCircuit->PlotInFo->VariableName + ")/V";
+        customPlot->xAxis->setLabel(XName);
+        customPlot->yAxis->setLabel(YName);
         qDebug()<<"begin:"<<*y.begin()<<"end:"<<*y.end();
         // set axes ranges, so we see all data:
         double x_max = *std::max_element(x.begin(),x.end());
@@ -401,7 +434,7 @@ void MainWindow::slotPlot()
 	    double y_min = *std::min_element(y.begin(),y.end());
 
         customPlot->xAxis->setRange(x_min, x_max);
-        customPlot->yAxis->setRange(y_min, y_max);
+        customPlot->yAxis->setRange(y_min-0.1, y_max);
         customPlot->replot();
         customPlot->setMinimumSize(450, 300);
         customPlot->show();
