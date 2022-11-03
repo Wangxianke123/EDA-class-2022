@@ -1,39 +1,37 @@
 #Start parsing netlist ...
 #grep an annotation:
-* TestBench 4 for Homework 5, 2022 EDA course. 
-#grep an annotation:
-* Author    : Hao Limin
-#grep an annotation:
-* Date      : 2022/10/25
-#grep an annotation:
-* Info      : LC oscillation.
-#grep an inductance:
-L1 1 0 1
+* Try to find out all errors of the netlist.
 #grep a resistor:
-R1 1 2 1
+R1 node_1 node_2 1K
+#grep an inductance:
+L1 node_3 GND 1m
 #grep a source:
-V1 2 0 PULSE (0 1 1 1 1 1 15)
+VIN gnd node_1 DC 5
 #grep a command:
-.tran 0.1 30
+.DC V1 0 10 1
 #grep a command:
-.plot TRAN v(1)
+.print V(node_1)
 #grep a command:
 .end
 Here's the result of parser:
 -----------------------------------------------------
 Title:
-TA-session-5-ckt-4
-Nodes:3
+TestBench 4 for Parser
+Nodes:5
 Devices:4
 Resistor:1	Capacitor:1	Inductance:1
 Vsrc:1
-Name:C1		Value:1		Node1:1		Node2:0
-Name:L1		Value:1		Node1:1		Node2:0
-Name:R1		Value:1		Node1:1		Node2:2
-Name:V1		Value:0		Node1:2		Node2:0
+Name:C1		Value:1e-11		Node1:node_2		Node2:node_3
+Name:L1		Value:0.001		Node1:node_3		Node2:GND
+Name:R1		Value:1000		Node1:node_1		Node2:node_2
+Name:VIN		Value:5		Node1:gnd		Node2:node_1
 -----------------------------------------------------
-name:	0	 row/col number in matrix:	1
-name:	1	 row/col number in matrix:	0
-name:	2	 row/col number in matrix:	3
-name:	I_L1	 row/col number in matrix:	2
-name:	I_V1	 row/col number in matrix:	4
+name:	GND	 row/col number in matrix:	4
+name:	I_L1	 row/col number in matrix:	3
+name:	I_VIN	 row/col number in matrix:	5
+name:	gnd	 row/col number in matrix:	6
+name:	node_1	 row/col number in matrix:	0
+name:	node_2	 row/col number in matrix:	1
+name:	node_3	 row/col number in matrix:	2
+error: line 4:fail to parse'R2 node_2 node_3'
+error: line 6:Element already exsists! 'C1 node_3 GND 1p'

@@ -23,7 +23,7 @@
 #include <QDir>
 #include <QLabel>
 #include <QtWidgets>
-
+#include <QColor>
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 {
     setWindowTitle(tr("EDA Class 2022, WenKai"));
@@ -118,7 +118,8 @@ void MainWindow::createMenus()
 {
     fileMenu = menuBar()->addMenu(tr("File"));
     editMenu = menuBar()->addMenu(tr("Edit"));
-    simulateMenu = menuBar()->addMenu(tr("simulate"));
+    simulateMenu = menuBar()->addMenu(tr("Simulate"));
+    ViewMenu = menuBar()->addMenu(tr("View"));
 
     fileMenu->addAction(fileNewAction);
     fileMenu->addSeparator(); /// Add separator between 2 actions.
@@ -131,7 +132,8 @@ void MainWindow::createMenus()
 
     simulateMenu->addAction(parserAction);
     simulateMenu->addAction(stampAction);
-    simulateMenu->addAction(plotAction);
+
+    ViewMenu->addAction(plotAction);
 }
 
 void MainWindow::createToolBars()
@@ -149,9 +151,24 @@ void MainWindow::createToolBars()
     editTool->addAction(cutAction);
     editTool->addAction(pasteAction);
 
-    demoTool->addAction(parserAction);
-    demoTool->addAction(stampAction);
-    demoTool->addAction(plotAction);
+    // demoTool->addAction(parserAction);
+    // demoTool->addAction(stampAction);
+ //   demoTool->addAction(plotAction);
+
+    
+    QToolButton *parserButton = new QToolButton(this); 
+    QToolButton *stampButton = new QToolButton(this);
+    QToolButton *plotButton = new QToolButton(this);
+    parserButton->setDefaultAction(parserAction);
+    stampButton->setDefaultAction(stampAction);
+    plotButton->setDefaultAction(plotAction);
+
+    QWidget *spacer = new QWidget(this);
+    spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    demoTool->addWidget(spacer);
+    demoTool->addWidget(parserButton);
+    demoTool->addWidget(stampButton);
+    demoTool->addWidget(plotButton);
 }
 
 /**
@@ -171,6 +188,12 @@ void MainWindow::slotParser()
     if(MainCircuit!=nullptr)
         delete MainCircuit;
     MainCircuit = parse(netList);
+    if(MainCircuit!=nullptr)
+        stampAction->setDisabled(false);
+    else{
+        stampAction->setDisabled(true);
+        plotAction->setDisabled(true);
+    }
     if(MainCircuit == nullptr)
     {
         QMessageBox::warning(this, tr("Error"), tr("Can not parse an empty Netlist!"));
@@ -193,14 +216,22 @@ void MainWindow::slotParser()
             QTextStream textStream(&file); // Use QTextStream to load text.
             while (!textStream.atEnd())
             {
-                transcript->setPlainText(textStream.readAll());
+                QString line= textStream.readLine();
+                if(line[0]=="#"){
+                    setInsertTextColor(Qt::blue);
+                }
+                else if(line.left(5)=="error"){
+                    setInsertTextColor(Qt::red);
+                }
+                else{
+                    setInsertTextColor(Qt::black);
+                }
+                transcript->append(line);
             }
             transcript->show();
             file.close();
         }
     }
-    if(stampAction!=nullptr)
-        stampAction->setDisabled(false);
     return;
 
 }
@@ -321,6 +352,11 @@ void MainWindow::slotStamp()
     QLabel *label = new QLabel();
     qDebug()<<MainCircuit->CommandList;
     MainCircuit->CommandParse();
+    if(MainCircuit->PlotInFo != nullptr)
+        plotAction->setDisabled(false);
+    else{
+        plotAction->setDisabled(true);
+    }
     QStringList content;
     mat A = MainCircuit->GenerateDcStamp();
     content << "Here is the stamp of circuit:";
@@ -332,8 +368,6 @@ void MainWindow::slotStamp()
     label->setAlignment(Qt::AlignCenter);
     label->resize(400, 300);
     label->show();
-    if(plotAction!=nullptr)
-        plotAction->setDisabled(false);
 
 }
 
@@ -444,4 +478,16 @@ void MainWindow::slotPlot()
     default:
         break;
     }
+}
+
+
+
+void MainWindow::setInsertTextColor(const QColor &color)
+ 
+{
+    QTextCharFormat fmt;//文本字符格式
+    fmt.setForeground(color);// 前景色(即字体色)设为color色
+    QTextCursor cursor = transcript->textCursor();//获取文本光标
+    cursor.mergeCharFormat(fmt);//光标后的文字就用该格式显示
+    transcript->mergeCurrentCharFormat(fmt);//textEdit使用当前的字符格式
 }

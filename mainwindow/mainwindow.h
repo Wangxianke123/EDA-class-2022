@@ -46,6 +46,8 @@ public:
     void createActions();
     /** @brief All of the toolbars should be defined in this function*/
     void createToolBars();
+    void setInsertTextColor(const QColor &color);
+
 
 public slots:
     void slotNewFile();
@@ -59,6 +61,7 @@ private:
     QMenu *fileMenu;
     QMenu *editMenu;
     QMenu *simulateMenu;
+    QMenu *ViewMenu;
     QToolBar *fileTool;
     QToolBar *editTool;
 
