@@ -38,11 +38,14 @@ public:
     QVector<DynamicElement> DynamicList;
     QVector<DependentElement> DependentList;
     QVector<VSource> VSourceList;
+    QVector<ISource> ISourceList;
+    QVector<Diode> DiodeList;
 
 
-    int C_nums,L_nums,R_nums,V_nums;
+    int C_nums,L_nums,R_nums,V_nums,I_nums,Dependent_nums;
 
     int DeviceCounts;
+    int Diode_nums;
     QVector<QString> CommandList;
     QString ReferenceNode;
 
@@ -57,11 +60,13 @@ public:
     void getAnnotation(QString annotation);
 
     //Add element to circuit
+    bool addISource(struct ISource* source);
     bool addVSource(struct VSource* source);
     bool addDynamic(struct DynamicElement* element);
     bool addStatic(struct StaticElement* element);
-    bool addDependent(struct DependentElement* element);
-
+    bool addDependent_VC(struct DependentElement* element);
+    bool addDependent_CC(struct DependentElement* element);
+    bool addDiode(Diode* element);
 
     void AddCommand(QString Command);
 
@@ -71,15 +76,16 @@ public:
     void TranAanlyze(struct TranInFo* TranInFo);
 
     mat GenerateDcStamp();
-    cx_mat GenerateAcStamp();
+    cx_mat GenerateAcStamp(double f);
     mat GenerateTranStamp(double h);
     // void printTwoSideElement();
     // void printFourSideElement();
-    void UpdateDCStamp_Vsource(double v,QString Name, mat &stamp);
+    bool UpdateDCStamp_Vsource(double v,QString Name, mat &stamp);
 
     void UpdateACStamp(double f,cx_mat &stamp);
+    void UpdateNonlinearStamp(mat &stamp, mat answer0 , mat answer1);
 
-    mat UpdateTranStamp(double time, double h, struct Tran_result *result);
+    void UpdateTranStamp(mat &stamp, double time, double h, struct Tran_result *result);
 
     QString printTitle();
     void printInfo();
@@ -91,6 +97,7 @@ public:
 
 
     void setReferenceNode();
+    mat SetInitialState();
     circuit();
     ~circuit();
 };

@@ -1,6 +1,9 @@
 #include"element.h"
 #include<QDebug>
 
+
+
+
 double getVoltage(const struct VSource* source, double time)
 {
     if(!source)
@@ -51,4 +54,54 @@ double Vpulse(double v_initial, double v_peak, double t_delay, double t_rise, do
         return v_initial;
     } 
     return 0;
+}
+
+
+
+double getCurrent(const struct ISource* source, double time)
+{
+    if(!source)
+    {
+        qDebug()<<"Something wrong in Current source!";
+        return 0;
+    }
+    switch (source->type)
+    {
+    case 'd':
+        return source->value;
+    case 'a':
+        return source->value;
+    case 'p':
+        return Vpulse(source->v_initial, source->v_peak, source->t_delay, source->t_rise, source->pulse_width, source->t_fall, source->period, time);
+    default:
+    {
+        qDebug()<<"Error source type!";
+        return 0;
+    }
+    }
+}
+
+
+Diode::Diode(/* args */)
+{
+}
+
+Diode::~Diode()
+{
+}
+
+double Diode::I(double N_p, double N_m)
+{
+    if( Is * (exp((N_p-N_m)/Vt)-1) > If)
+        return (N_p-N_m)/Rs;
+    else
+        return Is * (exp((N_p-N_m)/Vt)-1);
+}
+
+
+double Diode::I_differential(double N_p, double N_m)
+{
+    if( Is * (exp((N_p-N_m)/Vt)-1) > If)
+        return 1/Rs;
+    return Is/Vt * exp((N_p-N_m)/Vt);
 }

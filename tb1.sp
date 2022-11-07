@@ -1,16 +1,13 @@
-TA-session-5-ckt-1
-* TestBench 1 for Homework 5, 2022 EDA course.
-* Author    : Hao Limin
-* Date      : 2022/10/25
-* Info      : RES lade.
+TA-session-6-ckt-1
+* TestBench 1 for Homework 6, 2022 EDA course. 
+* Author    : Hao Limin.
+* Date      : 2022/11/03.
 
-R03 0 3 3k
-R23 2 3 1k
-R02 0 2 2k
-R12 1 2 1k
-R01 0 1 2k
-Vin 3 0 DC 5
+C1 2 0 1
+R1 1 0 1000 
+D1 1 2 diode
+Is 0 1 1 const(1)
 
-.DC Vin 5 15 0.5
-.plot DC v(1)
-.end
+.tran 0.01 1 0
+.plot tran v(2)
+.END

@@ -25,7 +25,6 @@ UI_DIR      = build
 HEADERS +=  circuit/circuit.h    \
             parser/analyzer.h  \
             mainwindow/mainwindow.h \
-            cpp_tutorial/myWidget.h \
             solver/solver.h \
             plotter/qcustomplot.h \
             element/element.h
@@ -34,7 +33,6 @@ SOURCES +=  main.cpp            \
             circuit/circuit.cpp   \
             parser/analyzer.cpp  \
             mainwindow/mainwindow.cpp   \
-            cpp_tutorial/myWidget.cpp   \
             solver/solver.cpp   \
             plotter/qcustomplot.cpp \
             element/element.cpp

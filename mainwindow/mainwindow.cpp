@@ -10,7 +10,6 @@
  */
 
 #include "mainwindow.h"
-#include "cpp_tutorial/myWidget.h"
 #include "circuit/circuit.h"
 #include "parser/analyzer.h"
 #include "solver/solver.h"
@@ -29,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     setWindowTitle(tr("EDA Class 2022, WenKai"));
     splitterMainWindow = new QSplitter(Qt::Vertical, this);
     text = new QTextEdit(this);
-    transcript = new QTextEdit(QStringLiteral("transcript"), this);
+    transcript = new QTextEdit(this);
     transcript->setReadOnly(true);
     setCentralWidget(splitterMainWindow);
 
@@ -112,6 +111,10 @@ void MainWindow::createActions()
     plotAction->setDisabled(true);
     connect(plotAction, SIGNAL(triggered()), this, SLOT(slotPlot()));
 
+    DiodeAction = new QAction( tr("Diode"), this);
+    DiodeAction->setToolTip(tr("Plot the I_V curve of diode model"));
+    connect(DiodeAction, SIGNAL(triggered()), this, SLOT(slotDiode()));
+
 }
 
 void MainWindow::createMenus()
@@ -134,6 +137,7 @@ void MainWindow::createMenus()
     simulateMenu->addAction(stampAction);
 
     ViewMenu->addAction(plotAction);
+    ViewMenu->addAction(DiodeAction);
 }
 
 void MainWindow::createToolBars()
@@ -159,9 +163,11 @@ void MainWindow::createToolBars()
     QToolButton *parserButton = new QToolButton(this); 
     QToolButton *stampButton = new QToolButton(this);
     QToolButton *plotButton = new QToolButton(this);
+    QToolButton *DiodeButton = new QToolButton(this);
     parserButton->setDefaultAction(parserAction);
     stampButton->setDefaultAction(stampAction);
     plotButton->setDefaultAction(plotAction);
+    DiodeButton->setDefaultAction(DiodeAction);
 
     QWidget *spacer = new QWidget(this);
     spacer->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -169,6 +175,7 @@ void MainWindow::createToolBars()
     demoTool->addWidget(parserButton);
     demoTool->addWidget(stampButton);
     demoTool->addWidget(plotButton);
+    demoTool->addWidget(DiodeButton);
 }
 
 /**
@@ -363,6 +370,7 @@ void MainWindow::slotStamp()
     content = content + printMatrix(A.cols(0,A.n_cols-2));
     content << "RHS:";
     content = content + printMatrix(A.col(A.n_cols-1));
+    content<<MainCircuit->printNodesInfo();
     label->setText(content.join('\n'));
 
     label->setAlignment(Qt::AlignCenter);
@@ -386,7 +394,7 @@ void MainWindow::slotPlot()
         stop = MainCircuit->DC_result->stop;
         step = MainCircuit->DC_result->step;
         int n = MainCircuit->DC_result->answer_table.size();
-        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInFo->VariableName];
+        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInFo->VariableName[0]];
         qDebug()<<"pos:"<<pos;
         for (int i = 0; i < n; i++)
         {
@@ -399,7 +407,7 @@ void MainWindow::slotPlot()
         customPlot->graph(0)->setData(x, y);
         // give the axes some labels:
         QString XName = MainCircuit->VSourceList[0].Name+"/V";
-        QString YName = "v(" + MainCircuit->PlotInFo->VariableName + ")/V";
+        QString YName = "v(" + MainCircuit->PlotInFo->VariableName[0] + ")/V";
         customPlot->xAxis->setLabel(XName);
         customPlot->yAxis->setLabel(YName);
         qDebug()<<"begin:"<<*y.begin()<<"end:"<<*y.end();
@@ -414,7 +422,7 @@ void MainWindow::slotPlot()
     }
     case 'a':{
         QVector<double> freqData,dBMagData,phaseData;
-        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInFo->VariableName];
+        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInFo->VariableName[0]];
         int n = MainCircuit->AC_result->cols;
          for (int i = 0; i < n; i++)
         {
@@ -434,7 +442,7 @@ void MainWindow::slotPlot()
         QSharedPointer<QCPAxisTickerLog> logTicker(new QCPAxisTickerLog);
         custPlot->xAxis->setTicker(logTicker);
         custPlot->xAxis->setScaleType(QCPAxis::stLogarithmic);
-        QString YName = "Magnitude of ("+ MainCircuit->PlotInFo->VariableName +")";
+        QString YName = "Magnitude of ("+ MainCircuit->PlotInFo->VariableName[0] +")";
         custPlot->yAxis->setLabel("M");
         custPlot->replot();
         custPlot->setMinimumSize(450, 300);
@@ -443,35 +451,49 @@ void MainWindow::slotPlot()
         break;
     }
     case 't':{
-        QVector<double> x,y;
+        QCustomPlot *customPlot = new QCustomPlot();
+        QVector<QColor> Colorlist = {Qt::red,Qt::blue,Qt::green,Qt::black};
+        QVector<double> x;
         int n = MainCircuit->Tran_result->TimeList.size();
-        int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInFo->VariableName];
-        qDebug()<<"pos:"<<pos;
         for (int i = 0; i < n; i++)
         {
-            x.push_back(MainCircuit->Tran_result->TimeList[i]);
-            y.push_back(MainCircuit->Tran_result->ValueList[i][pos]);
+                x.push_back(MainCircuit->Tran_result->TimeList[i]);
         }
-        QCustomPlot *customPlot = new QCustomPlot();
-        customPlot->addGraph();
-        customPlot->graph(0)->setData(x, y);
-        // give the axes some labels:
-        QString XName = "Time/s";
-        QString YName = "v(" + MainCircuit->PlotInFo->VariableName + ")/V";
-        customPlot->xAxis->setLabel(XName);
-        customPlot->yAxis->setLabel(YName);
-        qDebug()<<"begin:"<<*y.begin()<<"end:"<<*y.end();
-        // set axes ranges, so we see all data:
-        double x_max = *std::max_element(x.begin(),x.end());
-	    double x_min = *std::min_element(x.begin(),x.end());
-        double y_max = *std::max_element(y.begin(),y.end());
-	    double y_min = *std::min_element(y.begin(),y.end());
+        for (int i = 0; i < MainCircuit->PlotInFo->VariableName.size(); i++)
+        {
+            QVector<double> y;
+            customPlot->addGraph();
+            QColor color = Colorlist[i%Colorlist.size()];
+            customPlot->graph(i)->setPen(QPen(color.darker(200)));
+            int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInFo->VariableName[i]];
+            qDebug()<<"pos:"<<pos;
+            for (int i = 0; i < n; i++)
+            {
+                y.push_back(MainCircuit->Tran_result->ValueList[i][pos]);
+            }
+            customPlot->graph(i)->setData(x, y);
 
-        customPlot->xAxis->setRange(x_min, x_max);
-        customPlot->yAxis->setRange(y_min-0.1, y_max);
-        customPlot->replot();
-        customPlot->setMinimumSize(450, 300);
-        customPlot->show();
+            // give the axes some labels:
+            QString XName = "Time/s";
+            QString YName = "v(" + MainCircuit->PlotInFo->VariableName[i] + ")/V";
+            customPlot->xAxis->setLabel(XName);
+            customPlot->yAxis->setLabel("V/v");
+            customPlot->graph(i)->setName(YName);
+            qDebug()<<"begin:"<<*y.begin()<<"end:"<<*y.end();
+            // set axes ranges, so we see all data:
+            double x_max = *std::max_element(x.begin(),x.end());
+	        double x_min = *std::min_element(x.begin(),x.end());
+            double y_max = *std::max_element(y.begin(),y.end());
+	        double y_min = *std::min_element(y.begin(),y.end());
+            double x_length = x_max-x_min;
+            double y_length = y_max-y_min;
+            customPlot->xAxis->setRange(x_min-0.2*x_length, x_max+0.2*x_length);
+            customPlot->yAxis->setRange(y_min-0.2*y_length, y_max+0.2*y_length);
+            customPlot->legend->setVisible(true);
+            customPlot->replot();
+            customPlot->setMinimumSize(450, 300);
+            customPlot->show();
+        }    
         return;
         break;
     }
@@ -480,14 +502,45 @@ void MainWindow::slotPlot()
     }
 }
 
-
+void MainWindow::slotDiode()
+{
+    Diode diode;
+    QVector<double> x,y;
+    for (double i = -0.2; i < 0.3; i+=0.005)
+    {
+        x.push_back(i);
+        double temp = diode.I(i,0);
+        y.push_back(temp);
+    }
+        QCustomPlot *customPlot = new QCustomPlot();
+        customPlot->addGraph();
+        customPlot->graph(0)->setData(x, y);
+        // give the axes some labels:
+        QString XName = "V/v";
+        QString YName = "I/A";
+        customPlot->xAxis->setLabel(XName);
+        customPlot->yAxis->setLabel(YName);
+        qDebug()<<"begin:"<<*y.begin()<<"end:"<<*y.end();
+        // set axes ranges, so we see all data:
+        double x_max = *std::max_element(x.begin(),x.end());
+	    double x_min = *std::min_element(x.begin(),x.end());
+        double y_max = *std::max_element(y.begin(),y.end());
+	    double y_min = *std::min_element(y.begin(),y.end());
+        double x_length = x_max-x_min;
+        double y_length = y_max-y_min;
+        customPlot->xAxis->setRange(x_min-0.2*x_length, x_max+0.2*x_length);
+        customPlot->yAxis->setRange(y_min-0.2*y_length, y_max+0.2*y_length);
+        customPlot->replot();
+        customPlot->setMinimumSize(450, 300);
+        customPlot->show();  
+}
 
 void MainWindow::setInsertTextColor(const QColor &color)
  
 {
-    QTextCharFormat fmt;//文本字符格式
-    fmt.setForeground(color);// 前景色(即字体色)设为color色
-    QTextCursor cursor = transcript->textCursor();//获取文本光标
-    cursor.mergeCharFormat(fmt);//光标后的文字就用该格式显示
-    transcript->mergeCurrentCharFormat(fmt);//textEdit使用当前的字符格式
+    QTextCharFormat fmt;
+    fmt.setForeground(color);
+    QTextCursor cursor = transcript->textCursor();
+    cursor.mergeCharFormat(fmt);
+    transcript->mergeCurrentCharFormat(fmt);
 }

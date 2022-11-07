@@ -1,15 +1,15 @@
-TA-session-5-ckt-2
-* TestBench 2 for Homework 5, 2022 EDA course.
-* Author    : Hao Limin
-* Date      : 2022/10/25.
-* Info      : RLC filter.
+TA-session-6-ckt-2
+* TestBench 2 for Homework 6, 2022 EDA course. 
+* Author    : Hao Limin.
+* Date      : 2022/11/03.
 
-R1 1 0 1k
-C1 2 1 100u
-R2 3 2 1
-L1 4 3 100u
-V1 4 0 AC 1
+C1 2 0 1
+D1 1 0 diode
+D2 2 0 diode
+R1 1 0 1000 
+R2 1 2 1m
+Is 0 1 1 0 tran const(1)
 
-.AC DEC 10 1 100MEG
-.plot AC vm(1)
-.end
+.TRAN 0.01 1 0
+.plot tran v(1) v(2)
+.END

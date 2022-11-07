@@ -9,7 +9,7 @@
 #include <QChar>
 #include <math.h>
 #include <armadillo>
-#include"circuit.h"
+#include"circuit/circuit.h"
 #include"element/element.h"
 
 using namespace arma;
@@ -27,6 +27,8 @@ using namespace arma;
 #define IS_VCVS 11
 #define IS_CCCS 12
 #define IS_CCVS 13
+#define IS_DIODE 14
+
 
 #define FAIL_TO_ANALYZE 0
 
@@ -72,8 +74,9 @@ struct TranInFo{
 
 struct PlotInFo{
     char type;
-    QString VariableName;
-    PlotInFo(char type, QString VariableName) : type(type),VariableName(VariableName){};
+    QVector<QString> VariableName;
+    //PlotInFo(char type, QString VariableName) : type(type),VariableName(VariableName){};
+    PlotInFo(){};
 };
 
 int analyze(QString str, int line);
@@ -92,6 +95,8 @@ bool IsVCCS(QString str);
 bool IsVCVS(QString str);
 bool IsCCCS(QString str);
 bool IsCCVS(QString str);
+bool ISDiode(QString str);
+
 
 
 bool IsDcCommand(QString str);
@@ -113,9 +118,12 @@ struct ACInFo* ParseACInFo(QString str);
 struct PlotInFo* ParsePlotInFo(QString str);
 struct TranInFo* ParseTranInFo(QString str);
 
+struct ISource* ParseISource(QString str);
 struct VSource* ParseVsource(QString str); 
 struct DynamicElement* ParseDynamic(QString str);
 struct StaticElement* ParseStatic(QString str);
 struct Dependent* ParseDependent(QString str);
-
+struct DependentElement* ParseDependent_VC(QString str, char type);
+struct DependentElement* ParseDependent_CC(QString str, char type);
+Diode* ParseDiode(QString str);
 #endif

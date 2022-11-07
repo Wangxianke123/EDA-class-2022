@@ -10,7 +10,7 @@ mat solveDC(mat stamp, int pos){
     temp.zeros();
     temp(pos)=1;
     stamp.insert_rows(m,temp);
-    stamp.print("stamp:");
+    //stamp.print("stamp with ground:");
     if(solve(x,stamp.cols(0,n-2),stamp.col(n-1)))
         return x;
     else{
@@ -58,7 +58,30 @@ bool SaveTranAnswer(double time,mat answer,struct Tran_result* result)
 
     qDebug()<<"Saving answer at time:"<<time;
     result->TimeList.push_back(time);
+    result->cols++;
     std::vector<double> temp = conv_to<std::vector<double>>::from(answer);
     result->ValueList.push_back(temp);
+    return true;
+}
+
+
+bool convergent(mat x0, mat x1, double error_abs, double error_relative)
+{
+    int m1 = x0.n_rows;
+    int m2 = x1.n_rows;
+    int n1 = x0.n_cols;
+    int n2 = x1.n_cols;
+    if( m1!= m2 || n1 != n2) 
+    {
+        qDebug()<<"error in convergence testing";
+        return false;
+    }
+    for (int i = 0; i < m1; i++)
+    {
+        double delta = abs(x0(i,0)-x1(i,0));
+        double gamma = ( x0(i,0)==0 )? 0:abs( delta / x0(i,0));
+        if( delta > error_abs || gamma > error_relative)
+            return false;
+    }
     return true;
 }

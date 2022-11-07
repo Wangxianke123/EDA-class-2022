@@ -1,6 +1,6 @@
 #include"analyzer.h"
 #include"element/element.h"
-
+#include<QDate>
 
 circuit *parse(QString Netlist)
 {
@@ -12,7 +12,19 @@ circuit *parse(QString Netlist)
     QStringList list = Netlist.split('\n');
 
     circuit *newCircuit = new circuit;
+
+    QDateTime dt;
+	QDate date;
+	dt.setDate(date.currentDate());
+	QString currentDate = dt.toString("yyyy-MM-dd\t");
+	QTime time;
+	dt.setTime(time.currentTime());
+	QString currentTime = dt.toString("hh:mm:ss\t");
+
+
     QStringList ParsedInfo;
+
+    ParsedInfo << "Date:\t"+ currentDate + "Time:\t" + currentTime;
     QStringList ErrorInfo;
     ParsedInfo << "#Start parsing netlist ...";
     for (int i = 0; i < list.size(); i++)
@@ -78,7 +90,13 @@ circuit *parse(QString Netlist)
         }
         case IS_CURRENT_SOURCE:
         {
-            
+            ParsedInfo << "#grep a source:" << str;
+            struct ISource* element = ParseISource(str);
+            if (!newCircuit->addISource(element))
+            {
+                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
+                ErrorInfo << temp;
+            }
             break;
         }
         case IS_INDUCTANCE:
@@ -93,24 +111,59 @@ circuit *parse(QString Netlist)
             }
             break;
         }
-        case IS_VCCS:
+        case IS_VCCS://G
         {
-            
+            ParsedInfo << "#grep a dependent source:" << str;
+            struct DependentElement* element = ParseDependent_VC(str,'G');
+            if (!newCircuit->addDependent_VC(element))
+            {
+                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
+                ErrorInfo << temp;
+            }
             break;
         }
-        case IS_VCVS:
+        case IS_VCVS://E
         {
-            
+            ParsedInfo << "#grep a dependent source:" << str;
+            struct DependentElement* element = ParseDependent_VC(str, 'E');
+            if (!newCircuit->addDependent_VC(element))
+            {
+                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
+                ErrorInfo << temp;
+            }
             break;
         }
-        case IS_CCCS:
+        case IS_CCCS://F
         {
-           
+            ParsedInfo << "#grep a dependent source:" << str;
+            struct DependentElement* element = ParseDependent_CC(str,'F');
+            if (!newCircuit->addDependent_CC(element))
+            {
+                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
+                ErrorInfo << temp;
+            }
             break;
         }
-        case IS_CCVS:
+        case IS_CCVS://H
         {
-            
+            ParsedInfo << "#grep a dependent source:" << str;
+            struct DependentElement* element = ParseDependent_CC(str, 'H');
+            if (!newCircuit->addDependent_CC(element))
+            {
+                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
+                ErrorInfo << temp;
+            }
+            break;
+        }
+        case IS_DIODE:
+        {
+            ParsedInfo << "#grep a diode:" << str;
+            Diode *element = ParseDiode(str);
+            if (!newCircuit->addDiode(element))
+            {
+                QString temp = "error: line " + QString("%1").arg(i + 1) + ":Element already exsists! \'" + str + "\'";
+                ErrorInfo << temp;
+            }
             break;
         }
         default:
@@ -266,6 +319,8 @@ int analyze(QString str, int line)
         return IS_VCCS;
     else if (IsCCVS(str))
         return IS_CCVS;
+    else if (ISDiode(str))
+        return IS_DIODE;
     else if (IsEmpty(str))
         return IS_EMPTY;
     else if (line == 0)
@@ -345,16 +400,11 @@ bool IsVoltageSource(QString str)
 
 bool IsCurrentSource(QString str)
 {
-    QRegExp Source("^[Ii]\\w*\\s+\\w+\\s+\\w+\\s+[AD]?C?\\s*\\d+(.|(e-))?\\d*([FfTtpPnNuUmMkK]|(Meg))?\\s*$");
-    //    qDebug()<<Resistor.isValid();
-    int pos = 0;
-    if ((pos = Source.indexIn(str, pos)) != -1)
-    {
-        //        qDebug()<<"get a resistor:"<<str;
-        return true;
-    }
-    else
-        return false;
+    QRegExp Source1("^[Ii]\\w*\\s+\\w+\\s+\\w+\\s+[AaDd]?[Cc]?\\s*\\d+(.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?\\s*$");
+	QRegExp Source2("^[Ii]\\w*\\s+\\w+\\s+\\w+\\s+((pulse)|(PULSE))?\\s*[\\(](\\s*\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?)+[\\)]\\s*$");
+    QRegExp Source3("^[Ii]\\w*\\s+\\w+\\s+\\w+\\s+[AaDd]?[Cc]?\\s*\\d+(.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?(\\d*\\s*)?(tran)?\\s*(const\\(\\w+\\))?\\s*$");
+    bool flag1,flag2;
+	return (Source1.exactMatch(str) || Source2.exactMatch(str) || Source3.exactMatch(str));
 }
 bool IsEmpty(QString str)
 {
@@ -433,6 +483,17 @@ bool IsCCVS(QString str) // H
         return false;
 }
 
+bool ISDiode(QString str)
+{
+    QRegExp Diode("^[Dd]\\w*\\s+\\w+\\s+\\w+\\s+diode\\s*$");
+    int pos = 0;
+    if ((pos = Diode.indexIn(str, pos)) != -1)
+    {
+        return true;
+    }
+    else
+        return false;
+}
 
 bool IsDcCommand(QString str){
     QRegExp DC("([.][Dd][Cc])");
@@ -638,14 +699,16 @@ QStringList printMatrix(mat A)
     return content;
 }
 
-struct VSource* ParseVsource(QString str)
+
+struct ISource* ParseISource(QString str)
 {
-    QRegExp node("([^Vv]\\w+)");
-    QRegExp name("([Vv]\\w+)");
+    QRegExp node("([^Ii]\\w+)");
+    QRegExp name("([Ii]\\w+)");
 	QRegExp type("((DC)|(AC)|(dc)|(ac)|(PULSE)|(pulse))");
     QRegExp value("(\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?)");
-    struct VSource* element = new (struct VSource);
+    struct ISource* element = new (struct ISource);
 	int pos = 0;
+    int index1;
 	if ((pos = name.indexIn(str, pos)) != -1)
     {
         element->Name = name.cap(1).simplified();
@@ -659,17 +722,23 @@ struct VSource* ParseVsource(QString str)
     
             element->Nodes[i] = node.cap(1).simplified();
             pos += node.matchedLength();
+            index1 = pos;
         }
     }
 	if ((pos = type.indexIn(str, pos)) != -1)
     {
 		if(type.cap(1).simplified()=="DC" || type.cap(1).simplified()=="dc")
 			element->type = 'd';
-		if(type.cap(1).simplified()=="AC" || type.cap(1).simplified()=="ac")
+		else if(type.cap(1).simplified()=="AC" || type.cap(1).simplified()=="ac")
 			element->type = 'a';
-		if(type.cap(1).simplified()=="PULSE" || type.cap(1).simplified()=="pulse")
+		else if(type.cap(1).simplified()=="PULSE" || type.cap(1).simplified()=="pulse")
 			element->type = 'p';        
         pos += type.matchedLength();
+    }
+    if(pos==-1)
+    {
+        element->type = 'd';
+        pos = index1;
     }
 	if (element->type=='p'){
 		double valuelist[7];
@@ -695,6 +764,86 @@ struct VSource* ParseVsource(QString str)
 		if ((pos = value.indexIn(str, pos)) != -1)
     	{
         	element->value = StringToNum(value.cap(1).simplified());
+        	pos += value.matchedLength();
+    	}
+        if ((pos = value.indexIn(str, pos)) != -1)
+    	{
+        	element->phase = StringToNum(value.cap(1).simplified());
+        	pos += value.matchedLength();
+    	}
+	}
+	return element;
+}
+
+struct VSource* ParseVsource(QString str)
+{
+    QRegExp node("([^Vv]\\w+)");
+    QRegExp name("([Vv]\\w+)");
+	QRegExp type("((DC)|(AC)|(dc)|(ac)|(PULSE)|(pulse))");
+    QRegExp value("(\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?)");
+    struct VSource* element = new (struct VSource);
+	int pos = 0;
+    int index1;
+	if ((pos = name.indexIn(str, pos)) != -1)
+    {
+        element->Name = name.cap(1).simplified();
+        pos += name.matchedLength();
+
+    }
+	for (int i = 0; i <= 1; ++i)
+    {
+        if ((pos = node.indexIn(str, pos)) != -1)
+        {
+    
+            element->Nodes[i] = node.cap(1).simplified();
+            pos += node.matchedLength();
+            index1 = pos;
+        }
+    }
+	if ((pos = type.indexIn(str, pos)) != -1)
+    {
+		if(type.cap(1).simplified()=="DC" || type.cap(1).simplified()=="dc")
+			element->type = 'd';
+		if(type.cap(1).simplified()=="AC" || type.cap(1).simplified()=="ac")
+			element->type = 'a';
+		if(type.cap(1).simplified()=="PULSE" || type.cap(1).simplified()=="pulse")
+			element->type = 'p';        
+        pos += type.matchedLength();
+    }
+    if(pos==-1)
+    {
+        element->type = 'd';
+        pos = index1;
+    }
+	if (element->type=='p'){
+		double valuelist[7];
+		for (int i = 0; i < 7; ++i)
+    	{
+        	if ((pos = value.indexIn(str, pos)) != -1)
+        	{
+    
+            	valuelist[i]= StringToNum(value.cap(1).simplified());
+            	pos += value.matchedLength();
+        	}
+    	}
+		element->v_initial=valuelist[0];
+    	element->v_peak=valuelist[1];
+    	element->t_delay=valuelist[2];
+    	element->t_rise = valuelist[3];
+    	element->t_fall = valuelist[4];
+    	element->pulse_width = valuelist[5];
+    	element->period = valuelist[6];
+	}
+	else
+	{
+		if ((pos = value.indexIn(str, pos)) != -1)
+    	{
+        	element->value = StringToNum(value.cap(1).simplified());
+        	pos += value.matchedLength();
+    	}
+        if ((pos = value.indexIn(str, pos)) != -1)
+    	{
+        	element->phase = StringToNum(value.cap(1).simplified());
         	pos += value.matchedLength();
     	}
 	}
@@ -773,10 +922,72 @@ struct StaticElement* ParseStatic(QString str)
 
 
 
-struct Dependent* ParseDependent(QString str){
-    return nullptr;
+struct DependentElement* ParseDependent_VC(QString str,char type)
+{
+    QRegExp name("([EeGg]\\w+)");
+    QRegExp node("([^EeGg]\\w+)");
+    QRegExp value("(\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?)");
+    struct DependentElement* element = new (struct DependentElement);
+    element->type = type;
+    int pos = 0;
+    if ((pos = name.indexIn(str, pos)) != -1)
+    {
+        element->Name = name.cap(1).simplified();
+        pos += name.matchedLength();
+    }
+    for (int i = 0; i <= 3; ++i)
+    {
+        if ((pos = node.indexIn(str, pos)) != -1)
+        {
+    
+            element->Nodes[i] = node.cap(1).simplified();
+            pos += node.matchedLength();
+        }
+    }
+    if ((pos = value.indexIn(str, pos)) != -1)
+    {
+        element->ValueInString = value.cap(1).simplified();
+        element->value = StringToNum(value.cap(1).simplified());
+        pos += value.matchedLength();
+    }
+    return element;
 }
 
+struct DependentElement* ParseDependent_CC(QString str,char type)
+{
+    QRegExp name("([FfHh]\\w+)");
+    QRegExp node("([^FfHh]\\w+)");
+    QRegExp value("(\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?)");
+    struct DependentElement* element = new (struct DependentElement);
+    element->type = type;
+    int pos = 0;
+    if ((pos = name.indexIn(str, pos)) != -1)
+    {
+        element->Name = name.cap(1).simplified();
+        pos += name.matchedLength();
+    }
+    for (int i = 0; i <= 1; ++i)
+    {
+        if ((pos = node.indexIn(str, pos)) != -1)
+        {
+    
+            element->Nodes[i] = node.cap(1).simplified();
+            pos += node.matchedLength();
+        }
+    }
+    if ((pos = node.indexIn(str, pos)) != -1)
+    {
+            element->Controler = node.cap(1).simplified();
+            pos += node.matchedLength();
+    }
+    if ((pos = value.indexIn(str, pos)) != -1)
+    {
+        element->ValueInString = value.cap(1).simplified();
+        element->value = StringToNum(value.cap(1).simplified());
+        pos += value.matchedLength();
+    }
+    return element;
+}
 
 struct DCInFo* ParseDCInFo(QString str)
 {
@@ -840,42 +1051,52 @@ struct PlotInFo* ParsePlotInFo(QString str){
     if ((pos_DC = DC.indexIn(str, pos_DC)) != -1)
 	{
         pos_DC += DC.matchedLength();
-
-        if ((pos_DC = Name.indexIn(str, pos_DC)) != -1)
+        struct PlotInFo *plotinfo = new (struct PlotInFo);
+        plotinfo->type = 'a';
+        while ((pos_DC = Name.indexIn(str, pos_DC)) != -1)
         {
             QString temp = Name.cap(1).simplified();
             VariableName = temp.right(temp.size()-1);
             VariableName = VariableName.left(VariableName.size()-1);
-            struct PlotInFo *plotinfo = new struct PlotInFo('d',VariableName);
-            return plotinfo;
+            //struct PlotInFo *plotinfo = new struct PlotInFo('d',VariableName);
+            plotinfo->VariableName.push_back(VariableName);
+            pos_DC += Name.matchedLength();
         }
-        else{
-             qDebug()<<"Fail to parse Plot Command!";
-        }
+        return plotinfo;
 	}
 
     else if ((pos_AC = AC.indexIn(str, pos_AC)) != -1)
 	{
         pos_AC += AC.matchedLength();
-
-        if ((pos_AC = Name.indexIn(str, pos_AC)) != -1)
+        struct PlotInFo *plotinfo = new (struct PlotInFo);
+        plotinfo->type = 'a';
+        while ((pos_AC = Name.indexIn(str, pos_AC)) != -1)
         {
             QString temp = Name.cap(1).simplified();
             VariableName = temp.right(temp.size()-1);
             VariableName = VariableName.left(VariableName.size()-1);
-            struct PlotInFo *plotinfo = new struct PlotInFo('a',VariableName);
-            return plotinfo;
+            plotinfo->VariableName.push_back(VariableName);
+            pos_AC += Name.matchedLength();
         }
-        else{
-             qDebug()<<"Fail to parse Plot Command!";
-        }      
+        return plotinfo;   
 	}
 
     else if ((pos_TRAN = tran.indexIn(str, pos_TRAN)) != -1)
 	{
+        struct PlotInFo *plotinfo = new (struct PlotInFo);
         pos_TRAN += tran.matchedLength();
-
-        if ((pos_TRAN = Name.indexIn(str, pos_TRAN)) != -1)
+        while ((pos_TRAN = Name.indexIn(str, pos_TRAN)) != -1)
+        {
+            QString temp = Name.cap(1).simplified();
+            VariableName = temp.right(temp.size()-1);
+            VariableName = VariableName.left(VariableName.size()-1);
+            plotinfo->type = 't';
+            plotinfo->VariableName.push_back(VariableName);
+            pos_TRAN += Name.matchedLength();        
+        }
+        return plotinfo;
+    }    
+      /*   if ((pos_TRAN = Name.indexIn(str, pos_TRAN)) != -1)
         {
             QString temp = Name.cap(1).simplified();
             VariableName = temp.right(temp.size()-1);
@@ -885,8 +1106,8 @@ struct PlotInFo* ParsePlotInFo(QString str){
         }
         else{
              qDebug()<<"Fail to parse Plot Command!";
-        }      
-	}
+        }       */
+	
 
     else {
         qDebug()<<"Fail to parse Plot Command!";
@@ -896,6 +1117,8 @@ struct PlotInFo* ParsePlotInFo(QString str){
 
 
 struct TranInFo* ParseTranInFo(QString str)
+
+
 {
     struct TranInFo *traninfo = new(struct TranInFo);
     QRegExp Value("(\\d*[.]?\\d+((MEG)|(Meg)|[FfTtpPnNuUkKMm])?)");
@@ -920,4 +1143,29 @@ struct TranInFo* ParseTranInFo(QString str)
         return nullptr;
     }
     return traninfo;
+}
+
+
+Diode* ParseDiode(QString str)
+{
+    QRegExp name("([Dd]\\w+)");
+    QRegExp node("([^Dd]\\w+)");
+    Diode* element = new Diode;
+    int pos = 0;
+    if ((pos = name.indexIn(str, pos)) != -1)
+    {
+        element->Name = name.cap(1).simplified();
+        pos += name.matchedLength();
+
+    }
+    for (int i = 0; i <= 1; ++i)
+    {
+        if ((pos = node.indexIn(str, pos)) != -1)
+        {
+    
+            element->Nodes[i] = node.cap(1).simplified();
+            pos += node.matchedLength();
+        }
+    }
+    return element;
 }

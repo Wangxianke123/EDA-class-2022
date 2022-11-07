@@ -56,24 +56,20 @@ SOURCES       = main.cpp \
 		circuit/circuit.cpp \
 		parser/analyzer.cpp \
 		mainwindow/mainwindow.cpp \
-		cpp_tutorial/myWidget.cpp \
 		solver/solver.cpp \
 		plotter/qcustomplot.cpp \
 		element/element.cpp build/qrc_mainwindow.cpp \
 		build/moc_mainwindow.cpp \
-		build/moc_myWidget.cpp \
 		build/moc_qcustomplot.cpp
 OBJECTS       = build/main.o \
 		build/circuit.o \
 		build/analyzer.o \
 		build/mainwindow.o \
-		build/myWidget.o \
 		build/solver.o \
 		build/qcustomplot.o \
 		build/element.o \
 		build/qrc_mainwindow.o \
 		build/moc_mainwindow.o \
-		build/moc_myWidget.o \
 		build/moc_qcustomplot.o
 DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/unix.conf \
@@ -155,14 +151,12 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		EDA_wenkai.pro circuit/circuit.h \
 		parser/analyzer.h \
 		mainwindow/mainwindow.h \
-		cpp_tutorial/myWidget.h \
 		solver/solver.h \
 		plotter/qcustomplot.h \
 		element/element.h main.cpp \
 		circuit/circuit.cpp \
 		parser/analyzer.cpp \
 		mainwindow/mainwindow.cpp \
-		cpp_tutorial/myWidget.cpp \
 		solver/solver.cpp \
 		plotter/qcustomplot.cpp \
 		element/element.cpp
@@ -352,8 +346,8 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents mainwindow/mainwindow.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents circuit/circuit.h parser/analyzer.h mainwindow/mainwindow.h cpp_tutorial/myWidget.h solver/solver.h plotter/qcustomplot.h element/element.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp circuit/circuit.cpp parser/analyzer.cpp mainwindow/mainwindow.cpp cpp_tutorial/myWidget.cpp solver/solver.cpp plotter/qcustomplot.cpp element/element.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents circuit/circuit.h parser/analyzer.h mainwindow/mainwindow.h solver/solver.h plotter/qcustomplot.h element/element.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp circuit/circuit.cpp parser/analyzer.cpp mainwindow/mainwindow.cpp solver/solver.cpp plotter/qcustomplot.cpp element/element.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -404,9 +398,9 @@ compiler_moc_predefs_clean:
 build/moc_predefs.h: /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 	g++ -pipe -O2 -Wall -Wextra -dM -E -o build/moc_predefs.h /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: build/moc_mainwindow.cpp build/moc_myWidget.cpp build/moc_qcustomplot.cpp
+compiler_moc_header_make_all: build/moc_mainwindow.cpp build/moc_qcustomplot.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) build/moc_mainwindow.cpp build/moc_myWidget.cpp build/moc_qcustomplot.cpp
+	-$(DEL_FILE) build/moc_mainwindow.cpp build/moc_qcustomplot.cpp
 build/moc_mainwindow.cpp: mainwindow/mainwindow.h \
 		circuit/circuit.h \
 		solver/solver.h \
@@ -414,11 +408,6 @@ build/moc_mainwindow.cpp: mainwindow/mainwindow.h \
 		build/moc_predefs.h \
 		/usr/lib/qt5/bin/moc
 	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/wenkai/EDA_new/build/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/wenkai/EDA_new -I/home/wenkai/EDA_new -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/include/c++/11/backward -I/usr/lib/gcc/x86_64-linux-gnu/11/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include mainwindow/mainwindow.h -o build/moc_mainwindow.cpp
-
-build/moc_myWidget.cpp: cpp_tutorial/myWidget.h \
-		build/moc_predefs.h \
-		/usr/lib/qt5/bin/moc
-	/usr/lib/qt5/bin/moc $(DEFINES) --include /home/wenkai/EDA_new/build/moc_predefs.h -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++ -I/home/wenkai/EDA_new -I/home/wenkai/EDA_new -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtPrintSupport -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/11 -I/usr/include/x86_64-linux-gnu/c++/11 -I/usr/include/c++/11/backward -I/usr/lib/gcc/x86_64-linux-gnu/11/include -I/usr/local/include -I/usr/include/x86_64-linux-gnu -I/usr/include cpp_tutorial/myWidget.h -o build/moc_myWidget.cpp
 
 build/moc_qcustomplot.cpp: plotter/qcustomplot.h \
 		build/moc_predefs.h \
@@ -450,12 +439,11 @@ build/main.o: main.cpp mainwindow/mainwindow.h \
 build/circuit.o: circuit/circuit.cpp circuit/circuit.h \
 		solver/solver.h \
 		element/element.h \
-		parser/analyzer.h \
-		parser/circuit.h
+		parser/analyzer.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/circuit.o circuit/circuit.cpp
 
 build/analyzer.o: parser/analyzer.cpp parser/analyzer.h \
-		parser/circuit.h \
+		circuit/circuit.h \
 		solver/solver.h \
 		element/element.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/analyzer.o parser/analyzer.cpp
@@ -464,14 +452,9 @@ build/mainwindow.o: mainwindow/mainwindow.cpp mainwindow/mainwindow.h \
 		circuit/circuit.h \
 		solver/solver.h \
 		element/element.h \
-		cpp_tutorial/myWidget.h \
 		parser/analyzer.h \
-		parser/circuit.h \
 		plotter/qcustomplot.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/mainwindow.o mainwindow/mainwindow.cpp
-
-build/myWidget.o: cpp_tutorial/myWidget.cpp cpp_tutorial/myWidget.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/myWidget.o cpp_tutorial/myWidget.cpp
 
 build/solver.o: solver/solver.cpp solver/solver.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/solver.o solver/solver.cpp
@@ -487,9 +470,6 @@ build/qrc_mainwindow.o: build/qrc_mainwindow.cpp
 
 build/moc_mainwindow.o: build/moc_mainwindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/moc_mainwindow.o build/moc_mainwindow.cpp
-
-build/moc_myWidget.o: build/moc_myWidget.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/moc_myWidget.o build/moc_myWidget.cpp
 
 build/moc_qcustomplot.o: build/moc_qcustomplot.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o build/moc_qcustomplot.o build/moc_qcustomplot.cpp

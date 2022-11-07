@@ -57,6 +57,7 @@ public slots:
 
     void slotStamp();
     void slotPlot();
+    void slotDiode();
 private:
     QMenu *fileMenu;
     QMenu *editMenu;
@@ -80,6 +81,7 @@ private:
 
     QAction *plotAction;
 
+    QAction *DiodeAction;
     QTextEdit *text;
 
     QString fileName = "./";

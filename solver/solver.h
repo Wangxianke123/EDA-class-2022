@@ -34,6 +34,9 @@ cx_mat solveAC(cx_mat stamp,int pos);
 
 bool SaveDCAnswer(mat answer ,struct DC_result* result);
 bool SaveACAnswer(double f,cx_mat answer,struct AC_result* result);
+
 bool SaveTranAnswer(double time,mat answer,struct Tran_result* result);
 
+bool convergent(mat x0, mat x1, double error_abs, double error_relative);
 #endif
+
