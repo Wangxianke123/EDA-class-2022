@@ -386,16 +386,9 @@ bool IsVoltageSource(QString str)
 {
     QRegExp Source1("^[Vv]\\w*\\s+\\w+\\s+\\w+\\s+[AaDd]?[Cc]?\\s*\\d+(.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?\\s*$");
 	QRegExp Source2("^[Vv]\\w*\\s+\\w+\\s+\\w+\\s+((pulse)|(PULSE))?\\s*[\\(](\\s*\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?)+[\\)]\\s*$");
-    bool flag1,flag2;
-	if(Source1.exactMatch(str))
-		flag1 = true;
-	else
-		flag1 = false;
-	if(Source2.exactMatch(str))
-		flag2 = true;
-	else
-		flag2 = false;
-	return (flag1 || flag2);
+    QRegExp Source3("^[Vv]\\w*\\s+\\w+\\s+\\w+\\s+[AaDd]?[Cc]?\\s*\\d+(.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?(\\d*\\s*)?(tran)?\\s*(const\\(\\w+\\))?\\s*$");
+    QRegExp Source4("^[Vv]\\w*\\s+\\w+\\s+\\w+\\s+[AaDd]?[Cc]?((tran)|(TRAN))?\\s*(sin)?\\s*\\((\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?\\s*)+\\)\\s*$");
+    return (Source1.exactMatch(str) || Source2.exactMatch(str) || Source3.exactMatch(str)  || Source4.exactMatch(str));
 }
 
 bool IsCurrentSource(QString str)
@@ -403,9 +396,11 @@ bool IsCurrentSource(QString str)
     QRegExp Source1("^[Ii]\\w*\\s+\\w+\\s+\\w+\\s+[AaDd]?[Cc]?\\s*\\d+(.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?\\s*$");
 	QRegExp Source2("^[Ii]\\w*\\s+\\w+\\s+\\w+\\s+((pulse)|(PULSE))?\\s*[\\(](\\s*\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?)+[\\)]\\s*$");
     QRegExp Source3("^[Ii]\\w*\\s+\\w+\\s+\\w+\\s+[AaDd]?[Cc]?\\s*\\d+(.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?(\\d*\\s*)?(tran)?\\s*(const\\(\\w+\\))?\\s*$");
-    bool flag1,flag2;
-	return (Source1.exactMatch(str) || Source2.exactMatch(str) || Source3.exactMatch(str));
+    QRegExp Source4("^[Ii]\\w*\\s+\\w+\\s+\\w+\\s+[AaDd]?[Cc]?((tran)|(TRAN))?\\s*(sin)?\\s*\\((\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?\\s*)+\\)\\s*$");
+
+	return (Source1.exactMatch(str) || Source2.exactMatch(str) || Source3.exactMatch(str) || Source4.exactMatch(str));
 }
+
 bool IsEmpty(QString str)
 {
     QRegExp Empty("^\\s*$");
@@ -538,8 +533,6 @@ bool IsPlot(QString str){
     else    
         return false;
 }
-
-
 
 
 int Unittype(QChar unitIn)
@@ -700,15 +693,15 @@ QStringList printMatrix(mat A)
 }
 
 
-struct ISource* ParseISource(QString str)
+struct VSource* ParseVsource(QString str)
 {
-    QRegExp node("([^Ii]\\w+)");
-    QRegExp name("([Ii]\\w+)");
-	QRegExp type("((DC)|(AC)|(dc)|(ac)|(PULSE)|(pulse))");
+    QRegExp node("([^Vv]\\w+)");
+    QRegExp name("([Vv]\\w+)");
+	QRegExp type("((DC)|(AC)|(dc)|(ac)|(PULSE)|(pulse)|(tran)|(TRAN))");
     QRegExp value("(\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?)");
-    struct ISource* element = new (struct ISource);
+    struct VSource* element = new (struct VSource);
 	int pos = 0;
-    int index1;
+    int index1 = 0;
 	if ((pos = name.indexIn(str, pos)) != -1)
     {
         element->Name = name.cap(1).simplified();
@@ -732,7 +725,9 @@ struct ISource* ParseISource(QString str)
 		else if(type.cap(1).simplified()=="AC" || type.cap(1).simplified()=="ac")
 			element->type = 'a';
 		else if(type.cap(1).simplified()=="PULSE" || type.cap(1).simplified()=="pulse")
-			element->type = 'p';        
+			element->type = 'p';      
+        else if(type.cap(1).simplified()=="tran" || type.cap(1).simplified()=="TRAN")
+            element->type = 't';  
         pos += type.matchedLength();
     }
     if(pos==-1)
@@ -759,6 +754,42 @@ struct ISource* ParseISource(QString str)
     	element->pulse_width = valuelist[5];
     	element->period = valuelist[6];
 	}
+    else if (element->type=='t')
+    {
+		QVector<double> valuelist;
+            while ((pos = value.indexIn(str, pos)) != -1)
+        	{
+            	valuelist.push_back(StringToNum(value.cap(1).simplified()));
+            	pos += value.matchedLength();
+        	}
+    	for (int i = 0; i < valuelist.size(); i++)
+        {
+            switch (i)
+            {
+            case 0:
+                element->v_initial = valuelist[i];
+                break;
+            case 1:
+                element->v_peak = valuelist[i];
+                break;
+            case 2:
+                element->period = 1/valuelist[i];
+                break;
+            case 3:
+                element->t_delay = valuelist[i];
+                break;
+            case 4:
+                element->phase = valuelist[i];
+                break;
+             case 5:
+                element->dumping_factor = valuelist[i];
+                break;
+            default:
+                break;
+            }
+        }
+        
+	}
 	else
 	{
 		if ((pos = value.indexIn(str, pos)) != -1)
@@ -773,17 +804,17 @@ struct ISource* ParseISource(QString str)
     	}
 	}
 	return element;
-}
+} 
 
-struct VSource* ParseVsource(QString str)
+struct ISource* ParseISource(QString str)
 {
-    QRegExp node("([^Vv]\\w+)");
-    QRegExp name("([Vv]\\w+)");
-	QRegExp type("((DC)|(AC)|(dc)|(ac)|(PULSE)|(pulse))");
+    QRegExp node("([^Ii]\\w+)");
+    QRegExp name("([Ii]\\w+)");
+	QRegExp type("((DC)|(AC)|(dc)|(ac)|(PULSE)|(pulse)|(tran)|(TRAN)|(const))");
     QRegExp value("(\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?)");
-    struct VSource* element = new (struct VSource);
+    struct ISource* element = new (struct ISource);
 	int pos = 0;
-    int index1;
+    int index1 = 0;
 	if ((pos = name.indexIn(str, pos)) != -1)
     {
         element->Name = name.cap(1).simplified();
@@ -802,12 +833,14 @@ struct VSource* ParseVsource(QString str)
     }
 	if ((pos = type.indexIn(str, pos)) != -1)
     {
-		if(type.cap(1).simplified()=="DC" || type.cap(1).simplified()=="dc")
+		if(type.cap(1).simplified()=="DC" || type.cap(1).simplified()=="dc" || type.cap(1).simplified()=="const")
 			element->type = 'd';
-		if(type.cap(1).simplified()=="AC" || type.cap(1).simplified()=="ac")
+		else if(type.cap(1).simplified()=="AC" || type.cap(1).simplified()=="ac")
 			element->type = 'a';
-		if(type.cap(1).simplified()=="PULSE" || type.cap(1).simplified()=="pulse")
-			element->type = 'p';        
+		else if(type.cap(1).simplified()=="PULSE" || type.cap(1).simplified()=="pulse")
+			element->type = 'p';      
+        else if(type.cap(1).simplified()=="tran" || type.cap(1).simplified()=="TRAN")
+            element->type = 't';   
         pos += type.matchedLength();
     }
     if(pos==-1)
@@ -834,6 +867,43 @@ struct VSource* ParseVsource(QString str)
     	element->pulse_width = valuelist[5];
     	element->period = valuelist[6];
 	}
+    else if (element->type=='t')
+    {
+        
+		QVector<double> valuelist;
+            while ((pos = value.indexIn(str, pos)) != -1)
+        	{
+            	valuelist.push_back(StringToNum(value.cap(1).simplified()));
+            	pos += value.matchedLength();
+        	}
+    	for (int i = 0; i < valuelist.size(); i++)
+        {
+            switch (i)
+            {
+            case 0:
+                element->v_initial = valuelist[i];
+                break;
+            case 1:
+                element->v_peak = valuelist[i];
+                break;
+            case 2:
+                element->period = 1/valuelist[i];
+                break;
+            case 3:
+                element->t_delay = valuelist[i];
+                break;
+            case 4:
+                element->phase = valuelist[i];
+                break;
+             case 5:
+                element->dumping_factor = valuelist[i];
+                break;
+            default:
+                break;
+            }
+        }
+        
+	}
 	else
 	{
 		if ((pos = value.indexIn(str, pos)) != -1)
@@ -848,7 +918,8 @@ struct VSource* ParseVsource(QString str)
     	}
 	}
 	return element;
-} 
+}
+
 
 struct DynamicElement* ParseDynamic(QString str)
 {

@@ -506,7 +506,7 @@ void MainWindow::slotDiode()
 {
     Diode diode;
     QVector<double> x,y;
-    for (double i = -0.2; i < 0.3; i+=0.005)
+    for (double i = -0.2; i < 0.6; i+=0.004)
     {
         x.push_back(i);
         double temp = diode.I(i,0);

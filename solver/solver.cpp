@@ -63,7 +63,16 @@ bool SaveTranAnswer(double time,mat answer,struct Tran_result* result)
     result->ValueList.push_back(temp);
     return true;
 }
-
+mat TakeAnswer(struct Tran_result* result){
+    int n = result->rows;
+    mat answer(n,1);
+    for (int i = 0; i < n; i++)
+    {
+        answer(i) = result->ValueList.back()[i];
+    }
+    return answer;
+    
+}
 
 bool convergent(mat x0, mat x1, double error_abs, double error_relative)
 {
@@ -78,10 +87,10 @@ bool convergent(mat x0, mat x1, double error_abs, double error_relative)
     }
     for (int i = 0; i < m1; i++)
     {
-        double delta = abs(x0(i,0)-x1(i,0));
-        double gamma = ( x0(i,0)==0 )? 0:abs( delta / x0(i,0));
-        if( delta > error_abs || gamma > error_relative)
+        if (abs(x0(i,0)-x1(i,0)) > std::min(error_abs, error_relative * abs(x0(i, 0))) )
+        {
             return false;
+        }
     }
     return true;
 }

@@ -11,10 +11,11 @@ class Diode
 private:
     double Is = 0.468; //satruation current
     double Vt = 2.585e-2;// Vt = kq/T ,which depends on temperature,here we assume T=300k
-    double IBV = 1.0e-3;// current at broken voltage
-    double BV = 32.236;//broken voltage
-    double If = 3;// Maximium current
+    double IBV = Is*0.999;// current at broken voltage
+    double BV = Vt * log(1-IBV/Is);//broken voltage
+    double If = 10;// Maximium current
     double Rs = Vt/If * log(If/Is);  //inner resistor 
+    double Ro = 1e-4;
 public:
     QString Name;
     QString Nodes[2];
@@ -35,21 +36,21 @@ public:
 struct ISource
 {
     QString Name;
-    QString Nodes[2];//'d' for DC,'a' for AC
+    QString Nodes[2];//'d' for DC,'a' for AC ,p for pulse,s for sinusoidal
     char type;
 
     double value=0;//for DC & AC
-    double phase=0;//for AC only
+    double phase=0;//for AC &o sin
     
-    // for vpulse only 
-    double v_initial=0;
-    double v_peak=0;
-    double t_delay=0;
+    // for vpulse & sin
+    double v_initial=0;  //for sin: offset
+    double v_peak=0;    //for sin :amplified
+    double t_delay=0;   
     double t_rise = 0;
     double t_fall = 0;
     double pulse_width = 0;
-    double period = 0;
-
+    double period = 0;  // for sin : 1/frequency
+    double dumping_factor = 0;//for sin
     ISource(QString Name, char type) : Name(Name), type(type){};
     ISource(){};
     bool operator==(const ISource b)const
@@ -69,14 +70,14 @@ struct VSource  //vDC,vAC,vPulse
     double value=0;//for DC & AC
     double phase=0;//for AC only
     
-    // for vpulse only 
-    double v_initial=0;
-    double v_peak=0;
-    double t_delay=0;
+    double v_initial=0;  //for sin: offset
+    double v_peak=0;    //for sin :amplified
+    double t_delay=0;   
     double t_rise = 0;
     double t_fall = 0;
     double pulse_width = 0;
-    double period = 0;
+    double period = 0;  // for sin : 1/frequency
+    double dumping_factor = 0;//for sin
 
     VSource(QString Name, char type) : Name(Name), type(type){};
     VSource(){};
@@ -139,6 +140,8 @@ struct DependentElement
 double getVoltage(const struct VSource* source, double t);
 
 double Vpulse(double v_initial, double v_peak, double t_delay, double t_rise, double pulse_width, double t_fall, double period, double time);
+
+double Vsin(double v_initial, double v_peak, double period, double t_delay, double phase, double dumping_factor, double time);
 
 double getCurrent(const struct ISource* source, double t);
 

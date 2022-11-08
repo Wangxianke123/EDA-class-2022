@@ -31,6 +31,8 @@ struct Tran_result{
 
 mat solveDC(mat stamp, int pos);
 cx_mat solveAC(cx_mat stamp,int pos);
+mat TakeAnswer(struct Tran_result* result);
+
 
 bool SaveDCAnswer(mat answer ,struct DC_result* result);
 bool SaveACAnswer(double f,cx_mat answer,struct AC_result* result);

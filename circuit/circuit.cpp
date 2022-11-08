@@ -4,9 +4,9 @@
 #include <QVector>
 #include"element/element.h"
 
-#define ERROR_ABS 1e-10
-#define ERROR_RELATIVE 1e-4
-
+#define ERROR_ABS 1e-5
+#define ERROR_RELATIVE 1e-2
+#define ITERATION_BOUND 120
 void circuit::getTitle(QString title)
 {
     CircuitTitle = title;
@@ -632,25 +632,34 @@ void circuit::TranAanlyze(struct TranInFo* TranInFo)
     result->cols = 0;
     mat stamp = GenerateTranStamp(TranInFo->t_step);
     stamp.print("stamp:");
-    mat answer = SetInitialState();
-    answer.print("answer:");
-    SaveTranAnswer(0,answer,result);
+    mat answer_initial = SetInitialState();
+    answer_initial.print("answer_initial:");
+    SaveTranAnswer(0, answer_initial, result);
     foreach(const double &time, TimeList)
     {
-        qDebug()<<"time:"<<time;
+        //qDebug()<<"time:"<<time;
         UpdateTranStamp(stamp, time, TranInFo->t_step, result);
-        stamp.print("stamp:");
+        //stamp.print("stamp:");
         mat answer = solveDC(stamp,index);
-        mat answer_temp;
-        do
+        //answer.print("answer at time:");
+        mat answer_old = TakeAnswer(result);
+        int counter = 0;
+        while(!convergent(answer, answer_old, ERROR_ABS, ERROR_RELATIVE))
         {
-            answer_temp = answer;
-            UpdateNonlinearStamp(stamp,answer_temp,answer);
-            stamp.print("NR stamp:");
+            counter++;
+            //qDebug()<<"time:"<<time;
+            //answer_old.print("answer(n):");
+            //answer.print("answer(n+1):");
+            UpdateNonlinearStamp(stamp,answer_old,answer);
+            answer_old = answer;
             answer = solveDC(stamp, index);
-        } while (!convergent(answer, answer_temp, ERROR_ABS, ERROR_RELATIVE));
+            //stamp.print("NR stamp:");
+            if(counter>ITERATION_BOUND){
+                break;
+            }
+        } 
         
-        answer.print("answer:");
+        //answer.print("answer:");
         if(!SaveTranAnswer(time,answer,result))
         {
             break;
@@ -876,7 +885,7 @@ void circuit::UpdateNonlinearStamp(mat &stamp, mat answer0 , mat answer1)
 {
     foreach(Diode element, DiodeList)
     {
-        int m = stamp.n_rows;
+        // int m = stamp.n_rows;
         int n = stamp.n_cols;
         int N_p = MatrixOrder[element.Nodes[0]];
         int N_m = MatrixOrder[element.Nodes[1]];

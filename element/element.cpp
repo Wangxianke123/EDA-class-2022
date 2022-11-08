@@ -19,6 +19,8 @@ double getVoltage(const struct VSource* source, double time)
         return source->value;
     case 'p':
         return Vpulse(source->v_initial, source->v_peak, source->t_delay, source->t_rise, source->pulse_width, source->t_fall, source->period, time);
+    case 't':
+        return Vsin(source->v_initial, source->v_peak, source->period, source->t_delay, source->phase, source->dumping_factor, time);
     default:
     {
         qDebug()<<"Error source type!";
@@ -56,6 +58,10 @@ double Vpulse(double v_initial, double v_peak, double t_delay, double t_rise, do
     return 0;
 }
 
+double Vsin(double v_initial, double v_peak, double period, double t_delay, double phase, double dumping_factor, double time)
+{
+    return v_initial + v_peak * exp(-dumping_factor*(time - t_delay))*sin(2*datum::pi/period * (time - t_delay) + (phase/180)*datum::pi);
+}
 
 
 double getCurrent(const struct ISource* source, double time)
@@ -73,6 +79,8 @@ double getCurrent(const struct ISource* source, double time)
         return source->value;
     case 'p':
         return Vpulse(source->v_initial, source->v_peak, source->t_delay, source->t_rise, source->pulse_width, source->t_fall, source->period, time);
+    case 't':
+        return Vsin(source->v_initial, source->v_peak, source->period, source->t_delay, source->phase, source->dumping_factor, time);
     default:
     {
         qDebug()<<"Error source type!";
@@ -94,14 +102,25 @@ double Diode::I(double N_p, double N_m)
 {
     if( Is * (exp((N_p-N_m)/Vt)-1) > If)
         return (N_p-N_m)/Rs;
+    // else if(Is * (exp((N_p-N_m)/Vt)-1) < -IBV)
+    //     return -IBV + (N_p-N_m-BV)/Ro; 
     else
         return Is * (exp((N_p-N_m)/Vt)-1);
 }
 
 
+
 double Diode::I_differential(double N_p, double N_m)
 {
-    if( Is * (exp((N_p-N_m)/Vt)-1) > If)
+    if( Is * (exp((N_p-N_m)/Vt)-1) > If){
         return 1/Rs;
-    return Is/Vt * exp((N_p-N_m)/Vt);
+    }
+    // else if(Is * (exp((N_p-N_m)/Vt)-1) < -IBV){
+    //     return 1/Ro; 
+    // }
+    else{
+        return Is/Vt * exp((N_p-N_m)/Vt);
+    }
 }
+
+

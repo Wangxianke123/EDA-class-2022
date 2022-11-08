@@ -1,13 +1,14 @@
-TA-session-5-ckt-3
-* TestBench 3 for Homework 5, 2022 EDA course.
-* Author    : Hao Limin
-* Date      : 2022/10/25
-* Info      : RC charge.
+TA-session-6-ckt-3
+* TestBench 3 for Homework 6, 2022 EDA course. 
+* Author    : Hao Limin.
+* Date      : 2022/11/03.
 
-R1 1 2 1k
-C1 1 0 100u
-V1 2 0 PULSE (0 1 1 1 1 1 10)
+.model diode diode1
 
-.tran 0.01 3
-.plot TRAN v(1)
+V1 1 0 TRAN sin (0 1 1 0 0)
+R1 1 2 2m
+D1 2 0 diode
+
+.tran 0.01 2 0
+.plot tran v(2) v(1)
 .end
