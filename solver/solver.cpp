@@ -19,8 +19,9 @@ mat solveDC(mat stamp, int pos){
     }
 }
 
-bool SaveDCAnswer(mat answer ,struct DC_result* result){
+bool SaveDCAnswer(mat answer ,struct DC_result* result, double point){
     std::vector<double> temp = conv_to<std::vector<double>>::from(answer);
+    temp.insert(temp.begin(), point);
     result->answer_table.push_back(temp);
     return true;
 }

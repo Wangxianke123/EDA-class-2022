@@ -72,6 +72,7 @@ struct TranInFo{
     TranInFo(){};
 };
 
+
 struct PlotInFo{
     char type;
     QVector<QString> VariableName;
@@ -79,6 +80,9 @@ struct PlotInFo{
     PlotInFo(){};
 };
 
+struct PrintInFo{
+    QVector<QString> Nodes;
+};
 int analyze(QString str, int line);
 circuit *parse(QString Netlist);
 
@@ -103,7 +107,8 @@ bool IsDcCommand(QString str);
 bool IsAcCommand(QString str);
 bool IsTranCommand(QString str);
 bool IsPlot(QString str);
-
+bool IsOpCommand(QString str);
+bool IsPrintCommand(QString str);
 
 int Unittype(QChar unitIn);
 double StringToNum(QString str);
@@ -117,9 +122,20 @@ struct DCInFo* ParseDCInFo(QString str);
 struct ACInFo* ParseACInFo(QString str);
 struct PlotInFo* ParsePlotInFo(QString str);
 struct TranInFo* ParseTranInFo(QString str);
+struct PrintInFo* ParsePrintInfo(QString str);
 
 struct ISource* ParseISource(QString str);
-struct VSource* ParseVsource(QString str); 
+struct ISource* ParseISource_DC(QString str);
+struct ISource* ParseISource_AC(QString str);
+struct ISource* ParseISource_pulse(QString str);
+struct ISource* ParseISource_sin(QString str);
+
+struct VSource* ParseVSource(QString str); 
+struct VSource* ParseVSource_DC(QString str);
+struct VSource* ParseVSource_AC(QString str);
+struct VSource* ParseVSource_pulse(QString str);
+struct VSource* ParseVSource_sin(QString str);
+
 struct DynamicElement* ParseDynamic(QString str);
 struct StaticElement* ParseStatic(QString str);
 struct Dependent* ParseDependent(QString str);

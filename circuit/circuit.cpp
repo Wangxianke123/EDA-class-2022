@@ -34,7 +34,6 @@ void circuit::printInfo()
     printTitle();
     printAnnotation();
     printElementInfo();
-    printCommand();
     printNodesInfo();
 }
 
@@ -48,7 +47,7 @@ QStringList circuit::printElementInfo()
     Update();
     QStringList list;
     list << "Here's the result of parser:";
-    list << "-----------------------------------------------------";
+    list << "___________________________________________________";
     list << "Title:";
     list << printTitle();
     list << "Nodes:" + QString("%1").arg(NodesName.size());
@@ -87,15 +86,86 @@ QStringList circuit::printElementInfo()
     {
         list << "Name:" + QString("%1").arg(value.Name) + "\t\tNode1:" + QString("%1").arg(value.Nodes[0]) + "\t\tNode2:" + QString("%1").arg(value.Nodes[1]);
     }
-    list << "-----------------------------------------------------";
+    list << "___________________________________________________";
     list = list + printNodesInfo();
     return list;
 }
 
-void circuit::printCommand()
+QStringList circuit::printSourceInfo()
 {
-}
+    QStringList list;
+    foreach(const VSource& element, VSourceList)
+    {
+        qDebug()<<"Name:\t"<<element.Name<<"\tNode1:\t"<<element.Nodes[0]<<"\tNode2:\t"<<element.Nodes[1];
+        list<<"Name:\t"+element.Name+"\tNode1:\t"+element.Nodes[0]+"\tNode2:\t"+element.Nodes[1];
+        switch (element.type)
+        {
+        case 'd':
+            qDebug()<<"value:\t"<<element.value;
+            break;
+        case 'a':
+            qDebug()<<"value:\t"<<element.value;
+            qDebug()<<"phase:\t"<<element.phase;
+            break;
+        case 'p':
+            qDebug()<<"V_initial:\t"<<element.v_initial;
+            qDebug()<<"V_peak:\t"<<element.v_peak;
+            qDebug()<<"t_delay:\t"<<element.t_delay;
+            qDebug()<<"t_rise:\t"<<element.t_rise;
+            qDebug()<<"t_fall:\t"<<element.t_fall;
+            qDebug()<<"pulse_width:\t"<<element.pulse_width;
+            qDebug()<<"period:\t"<<element.period;
+            break;
+        case 's':
+            qDebug()<<"offset:\t"<<element.v_initial;
+            qDebug()<<"amplify:\t"<<element.v_peak;
+            qDebug()<<"t_delay:\t"<<element.t_delay;
+            qDebug()<<"phase:\t"<<element.phase;
+            qDebug()<<"dumping factor:\t"<<element.dumping_factor;
+            qDebug()<<"period:\t"<<element.period;
+            break;
+        default:
+            break;
+        }
+    }
 
+    foreach(const ISource& element, ISourceList)
+    {
+        qDebug()<<"Name:\t"<<element.Name<<"\tNode1:\t"<<element.Nodes[0]<<"\tNode2:\t"<<element.Nodes[1];
+        list<<"Name:\t"+element.Name+"\tNode1:\t"+element.Nodes[0]+"\tNode2:\t"+element.Nodes[1];
+        switch (element.type)
+        {
+        case 'd':
+            qDebug()<<"value:\t"<<element.value;
+            break;
+        case 'a':
+            qDebug()<<"value:\t"<<element.value;
+            qDebug()<<"phase:\t"<<element.phase;
+            break;
+        case 'p':
+            qDebug()<<"V_initial:\t"<<element.v_initial;
+            qDebug()<<"V_peak:\t"<<element.v_peak;
+            qDebug()<<"t_delay:\t"<<element.t_delay;
+            qDebug()<<"t_rise:\t"<<element.t_rise;
+            qDebug()<<"t_fall:\t"<<element.t_fall;
+            qDebug()<<"pulse_width:\t"<<element.pulse_width;
+            qDebug()<<"period:\t"<<element.period;
+            break;
+        case 's':
+            qDebug()<<"offset:\t"<<element.v_initial;
+            qDebug()<<"amplify:\t"<<element.v_peak;
+            qDebug()<<"t_delay:\t"<<element.t_delay;
+            qDebug()<<"phase:\t"<<element.phase;
+            qDebug()<<"dumping factor:\t"<<element.dumping_factor;
+            qDebug()<<"period:\t"<<element.period;
+            break;
+        default:
+            break;
+        }
+    }
+
+    return list;
+}
 
 void circuit::Update()
 {
@@ -112,9 +182,57 @@ QStringList circuit::printNodesInfo()
         qDebug() << "name: " << iter.key() << "\t row/col number in matrix:" << iter.value();
         iter++;
     }
+    list<<"___________________________________________________";
     return list;
 }
 
+
+void circuit::PrintResult(struct PrintInFo* info)
+{
+    qDebug()<<"start print info....";
+    QStringList list;
+    switch (AnalyzeType)
+    {
+    case 'o':
+        foreach(const QString &nodes, info->Nodes)
+        {
+            int pos = MatrixOrder[nodes];
+            QString temp = "V("+nodes+"):\t" + QString("%1").arg(Opanswer[pos]);
+            list << temp;
+        }
+        break;
+    case 'd':
+        for (int i = 0; i < DC_result->cols; i++)
+        {
+            QString temp = "point:" +  QString("%1").arg(DC_result->answer_table[i][0])+"\n";
+            foreach(const QString &nodes, info->Nodes)
+            {
+                int pos = MatrixOrder[nodes];
+                temp += "V("+nodes+"):\t" + QString("%1").arg(DC_result->answer_table[i][pos+1]) + "\n";
+            }
+            list << temp;
+        }
+        break;
+    case 'a':
+        for (int i = 0; i < DC_result->cols; i++)
+        {
+            QString temp = "point:" +  QString("%1").arg(AC_result->FrequencyList[i])+"\n";
+            foreach(const QString &nodes, info->Nodes)
+            {
+                int pos = MatrixOrder[nodes];
+                temp += "Mag("+nodes+"):\t" + QString("%1").arg(AC_result->Magnitude[i][pos]) + "Phase("+nodes+"):\t" + QString("%1").arg(AC_result->Phase[i][pos])+"\n";
+            }
+            list << temp;
+        }
+        break;
+    default:
+        break;
+    }
+    ui->WriteTranscript(list);
+    ui->UpdateTranscript();
+    qDebug()<<"end print info";
+    return;
+}
 void circuit::AddCommand(QString Command)
 {
     CommandList.push_back(Command);
@@ -541,6 +659,15 @@ void circuit::CommandParse(){
 	        qDebug()<<"stop:"<<TranInFo->t_stop;
             TranAanlyze(TranInFo);
         }
+        if(IsOpCommand(value)){
+            qDebug()<<"grep an op command";
+            OpAnalyze();
+        }
+        if(IsPrintCommand(value)){
+            qDebug()<<"grep a print command";
+            struct PrintInFo* info = ParsePrintInfo(value);
+            PrintResult(info);
+        }
         if(IsPlot(value)){
             PlotInFo = ParsePlotInFo(value);
         }
@@ -549,6 +676,7 @@ void circuit::CommandParse(){
 
 void circuit::DCAanlyze(struct DCInFo* DCInFo)
 {
+    AnalyzeType = 'd';
     setReferenceNode();
     int index = MatrixOrder[ReferenceNode];
     double start = DCInFo->start;
@@ -557,7 +685,7 @@ void circuit::DCAanlyze(struct DCInFo* DCInFo)
     int n = (start==stop)? 1:int((stop-start)/step);
     struct DC_result  *result=new struct DC_result(DCInFo->Name,start,stop,step,MatrixOrder.size()+1,n); 
     mat temp = GenerateDcStamp(); 
-    for(double v=start;v<stop;v+=step){
+    for(double v=start;v<=stop;v+=step){
         qDebug()<<"V="<<v;
         if(!UpdateDCStamp_Vsource(v,DCInFo->Name,temp))
             {break;}
@@ -565,7 +693,7 @@ void circuit::DCAanlyze(struct DCInFo* DCInFo)
         temp.print("temp:");
         //amendAnswer_DC(answer);
         answer.print("Answer:");
-        SaveDCAnswer(answer,result);
+        SaveDCAnswer(answer,result,v);
     }
     if(DC_result!=nullptr){
         delete DC_result;
@@ -574,7 +702,9 @@ void circuit::DCAanlyze(struct DCInFo* DCInFo)
     qDebug()<<"end dc analysis";
 }
 
-void circuit::ACAanlyze(struct ACInFo* ACInFo){
+void circuit::ACAanlyze(struct ACInFo* ACInFo)
+{   
+    AnalyzeType = 'a';
     setReferenceNode();
     int index = MatrixOrder[ReferenceNode];
     switch (ACInFo->sweep_type)
@@ -619,6 +749,7 @@ void circuit::ACAanlyze(struct ACInFo* ACInFo){
 
 void circuit::TranAanlyze(struct TranInFo* TranInFo)
 {
+    AnalyzeType = 't';
     qDebug()<<"Startint transient simulation....";
     setReferenceNode();
     int index = MatrixOrder[ReferenceNode];
@@ -681,6 +812,18 @@ void circuit::TranAanlyze(struct TranInFo* TranInFo)
     return;
 }
 
+void circuit::OpAnalyze()
+{
+    AnalyzeType = 'o';
+    setReferenceNode();
+    mat stamp = GenerateDcStamp();
+    int index = MatrixOrder[ReferenceNode];
+    mat answer = solveDC(stamp, index);
+    answer.print("answer:");
+    Opanswer = answer;
+    return;
+}
+
 void circuit::setReferenceNode()
 {
     if(NodesName.contains("gnd"))
@@ -707,7 +850,7 @@ mat circuit::SetInitialState()
 
 bool circuit::UpdateDCStamp_Vsource(double v,QString Name, mat &stamp)
 {
-    if(!MatrixOrder.contains(Name)){
+    if(!MatrixOrder.contains("I_"+Name)){
         qDebug()<<"Error: Circuit has no element named:"<<Name<<"! Please check your netlist!";
         return false;
     }
@@ -805,80 +948,6 @@ void circuit::UpdateTranStamp(mat &stamp, double time, double h, struct Tran_res
     }
     return ;
 }
-
-
-
-
-/* mat circuit::UpdateTranStamp(double time, double h, struct Tran_result *result)
-{
-    int col = (int)((time-h)/h);
-    int n = MatrixOrder.size();
-    qDebug()<<"Matrix size:"<<n;
-    printNodesInfo();
-    mat stamp(n, n);   
-    mat RHS(n,1);
-    stamp.zeros();
-    RHS.zeros();
-    if (h==0)
-    {
-        qDebug()<<"Error: tran step can not be 0!";
-        return join_horiz(stamp, RHS);
-    }
-    foreach (const StaticElement &element, StaticList)
-    {
-        stamp(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[0]]) += 1 / element.value;
-        stamp(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[1]]) += -1 / element.value;
-        stamp(MatrixOrder[element.Nodes[1]], MatrixOrder[element.Nodes[0]]) += -1 / element.value;
-        stamp(MatrixOrder[element.Nodes[1]], MatrixOrder[element.Nodes[1]]) += 1 / element.value;
-    }
-    foreach (const VSource &element, VSourceList)
-    {
-        stamp(MatrixOrder[element.Nodes[0]], MatrixOrder["I_" + element.Name]) += 1;
-        stamp(MatrixOrder[element.Nodes[1]], MatrixOrder["I_" + element.Name]) += -1;
-        stamp(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[0]]) += 1;
-        stamp(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[1]]) += -1;
-        RHS(MatrixOrder["I_" + element.Name]) = getVoltage(&element,time);
-    }
-    foreach (const ISource &element, ISourceList)
-    {
-        RHS(MatrixOrder[element.Nodes[0]]) += -getCurrent(&element,time);
-        RHS(MatrixOrder[element.Nodes[1]]) +=  getCurrent(&element,time);
-    }
-    foreach(const DynamicElement &element, DynamicList)
-    {
-        switch (element.type)
-        {
-        case 'c':
-        {
-            stamp(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[0]]) += element.value/h;
-            stamp(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[1]]) += -element.value/h;
-            stamp(MatrixOrder[element.Nodes[1]], MatrixOrder[element.Nodes[0]]) += -element.value/h;
-            stamp(MatrixOrder[element.Nodes[1]], MatrixOrder[element.Nodes[1]]) += element.value/h;
-            double V_t_h = result->ValueList[col][MatrixOrder[element.Nodes[0]]] - result->ValueList[col][MatrixOrder[element.Nodes[1]]];
-            RHS(MatrixOrder[element.Nodes[0]]) += element.value / h * V_t_h;
-            RHS(MatrixOrder[element.Nodes[1]]) += -element.value / h * V_t_h;
-            break;
-        }
-        case 'l':
-        {
-            stamp(MatrixOrder[element.Nodes[0]], MatrixOrder["I_" + element.Name]) += 1;
-            stamp(MatrixOrder[element.Nodes[1]], MatrixOrder["I_" + element.Name]) += -1;
-            stamp(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[0]]) += 1;
-            stamp(MatrixOrder["I_" + element.Name], MatrixOrder[element.Nodes[1]]) += -1;
-            stamp(MatrixOrder["I_" + element.Name], MatrixOrder["I_" + element.Name]) += -element.value/h;
-            double i_t_h = result->ValueList[col][MatrixOrder["I_" + element.Name]];
-            RHS(MatrixOrder["I_" + element.Name]) += -element.value/h * i_t_h;
-            break;
-        }
-        default:
-            break;
-        }
-    }
-    return join_horiz(stamp, RHS);
-}
-
-
-*/
 
 
 void circuit::UpdateNonlinearStamp(mat &stamp, mat answer0 , mat answer1)

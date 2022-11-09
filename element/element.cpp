@@ -19,7 +19,7 @@ double getVoltage(const struct VSource* source, double time)
         return source->value;
     case 'p':
         return Vpulse(source->v_initial, source->v_peak, source->t_delay, source->t_rise, source->pulse_width, source->t_fall, source->period, time);
-    case 't':
+    case 's':
         return Vsin(source->v_initial, source->v_peak, source->period, source->t_delay, source->phase, source->dumping_factor, time);
     default:
     {
@@ -79,7 +79,7 @@ double getCurrent(const struct ISource* source, double time)
         return source->value;
     case 'p':
         return Vpulse(source->v_initial, source->v_peak, source->t_delay, source->t_rise, source->pulse_width, source->t_fall, source->period, time);
-    case 't':
+    case 's':
         return Vsin(source->v_initial, source->v_peak, source->period, source->t_delay, source->phase, source->dumping_factor, time);
     default:
     {

@@ -3,7 +3,7 @@
 ######################################################################
 
 TEMPLATE = app
-TARGET = EDA_new
+TARGET = EDA
 INCLUDEPATH += .
 
 LIBS += -larmadillo

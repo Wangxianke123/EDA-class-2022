@@ -13,10 +13,10 @@
 #include <math.h>
 #include"solver/solver.h"
 #include"element/element.h"
-
+#include"mainwindow/mainwindow.h"
 using namespace arma;
 
-
+class MainWindow;
 bool IsDcCommand(QString str);
 bool IsAcCommand(QString str);
 
@@ -29,6 +29,8 @@ struct PlotInfo{
 class circuit
 {
 public:
+
+    MainWindow *ui;
     QString CircuitTitle;
     QString CircuitAnnotation;
     QMap<QString, int> MatrixOrder;
@@ -49,12 +51,14 @@ public:
     QVector<QString> CommandList;
     QString ReferenceNode;
 
+
+    char AnalyzeType;
     struct DC_result* DC_result = nullptr;
     struct AC_result* AC_result = nullptr;
     struct Tran_result* Tran_result = nullptr;
-
     struct PlotInFo* PlotInFo = nullptr;
 
+    mat Opanswer;
 
     void getTitle(QString title);
     void getAnnotation(QString annotation);
@@ -74,7 +78,7 @@ public:
     void DCAanlyze(struct DCInFo* DCInFo);
     void ACAanlyze(struct ACInFo* ACInFo);
     void TranAanlyze(struct TranInFo* TranInFo);
-
+    void OpAnalyze();
     mat GenerateDcStamp();
     cx_mat GenerateAcStamp(double f);
     mat GenerateTranStamp(double h);
@@ -91,8 +95,10 @@ public:
     void printInfo();
     QString printAnnotation();
     QStringList printElementInfo();
-    void printCommand();
     QStringList printNodesInfo();
+    QStringList printSourceInfo();
+    void PrintResult(struct PrintInFo* info);
+
     void Update();
 
 

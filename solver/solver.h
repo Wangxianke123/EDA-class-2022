@@ -9,9 +9,9 @@ struct DC_result
 {
     QString SourceName;
     double start,stop,step;
-    int m,n;
+    int rows,cols;
     std::vector<std::vector<double>> answer_table;
-    DC_result(QString str,double a,double b,double c,int m,int n) : SourceName(str),start(a), stop(b),step(c),m(m),n(n){};
+    DC_result(QString str,double a,double b,double c,int m,int n) : SourceName(str),start(a), stop(b),step(c),rows(m),cols(n){};
 };
 
 struct AC_result{
@@ -34,7 +34,7 @@ cx_mat solveAC(cx_mat stamp,int pos);
 mat TakeAnswer(struct Tran_result* result);
 
 
-bool SaveDCAnswer(mat answer ,struct DC_result* result);
+bool SaveDCAnswer(mat answer ,struct DC_result* result, double point);
 bool SaveACAnswer(double f,cx_mat answer,struct AC_result* result);
 
 bool SaveTranAnswer(double time,mat answer,struct Tran_result* result);

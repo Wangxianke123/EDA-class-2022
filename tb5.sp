@@ -1,13 +1,8 @@
-TA-session-6-ckt-1
-* TestBench 1 for Homework 6, 2022 EDA course. 
-* Author    : Hao Limin.
-* Date      : 2022/11/03.
+Source test
 
-C1 2 0 1
-R1 1 0 1000 
-D1 1 2 diode
-Is 0 1 PULSE (0 1 1 1 1 1 10)
-
-.tran 0.01 3 0
-.plot tran v(2)
-.END
+Vin 3 0 DC 5
+V1 4 0 AC 1 90
+V2 1 0 TRAN sin (0 1 1 0 0)
+Is1 0 1 1 0 tran const(1)
+Is2 0 1 1 const(1)
+V3 2 0 PULSE (0 1 1 1 1 1 10)

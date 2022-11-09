@@ -25,7 +25,7 @@ class QTextDocument;
 class QSplitter;
 class QWidget;
 class QTextStream;
-
+class circuit;
 /**
  * @class MainWindow
  * @brief QMainWindow defination
@@ -48,6 +48,8 @@ public:
     void createToolBars();
     void setInsertTextColor(const QColor &color);
 
+    void WriteTranscript(const QStringList &list);
+    void UpdateTranscript();
 
 public slots:
     void slotNewFile();

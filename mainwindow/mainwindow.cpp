@@ -195,6 +195,8 @@ void MainWindow::slotParser()
     if(MainCircuit!=nullptr)
         delete MainCircuit;
     MainCircuit = parse(netList);
+    MainCircuit->ui = this;
+    MainCircuit->printSourceInfo();
     if(MainCircuit!=nullptr)
         stampAction->setDisabled(false);
     else{
@@ -206,41 +208,8 @@ void MainWindow::slotParser()
         QMessageBox::warning(this, tr("Error"), tr("Can not parse an empty Netlist!"));
         return;
     }
-    QFile file("transcript");
-    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
-    {
-        QMessageBox::warning(this, tr("Error"), tr("Failed to open transcript!"));
-        return;
-    }
-    else
-    {
-        if (!file.isReadable())
-        {
-            QMessageBox::warning(this, tr("Error"), tr("The transcript is unreadable"));
-        }
-        else
-        {
-            QTextStream textStream(&file); // Use QTextStream to load text.
-            while (!textStream.atEnd())
-            {
-                QString line= textStream.readLine();
-                if(line[0]=="#"){
-                    setInsertTextColor(Qt::blue);
-                }
-                else if(line.left(5)=="error"){
-                    setInsertTextColor(Qt::red);
-                }
-                else{
-                    setInsertTextColor(Qt::black);
-                }
-                transcript->append(line);
-            }
-            transcript->show();
-            file.close();
-        }
-    }
+    UpdateTranscript();
     return;
-
 }
 /**
  * @brief Open action will open the saved files .
@@ -506,7 +475,7 @@ void MainWindow::slotDiode()
 {
     Diode diode;
     QVector<double> x,y;
-    for (double i = -0.2; i < 0.6; i+=0.004)
+    for (double i = -0.1; i < 0.1; i+=0.0001)
     {
         x.push_back(i);
         double temp = diode.I(i,0);
@@ -544,3 +513,56 @@ void MainWindow::setInsertTextColor(const QColor &color)
     cursor.mergeCharFormat(fmt);
     transcript->mergeCurrentCharFormat(fmt);
 }
+
+
+void MainWindow::WriteTranscript(const QStringList &list)
+{
+    QFile file("transcript");
+    if (file.open(QIODevice::WriteOnly | QIODevice::Append))//Text
+    {
+        QTextStream out(&file);
+        out << list.join('\n');
+        out <<"\n";
+        file.close();
+    }
+}
+
+void MainWindow::UpdateTranscript()
+ {
+    QFile file("transcript");
+    if (!file.open(QIODevice::ReadOnly | QIODevice::Text))
+    {
+        QMessageBox::warning(this, tr("Error"), tr("Failed to open transcript!"));
+        return;
+    }
+    else
+    {
+        if (!file.isReadable())
+        {
+            QMessageBox::warning(this, tr("Error"), tr("The transcript is unreadable"));
+        }
+        else
+        {
+            QTextStream textStream(&file); // Use QTextStream to load text.
+            while (!textStream.atEnd())
+            {
+                QString line= textStream.readLine();
+                if(line[0]=="#"){
+                    setInsertTextColor(Qt::blue);
+                }
+                else if(line.left(5)=="error"){
+                    setInsertTextColor(Qt::red);
+                }
+                else if(line[0]=="_"){
+                    setInsertTextColor(Qt::green);
+                }
+                else{
+                    setInsertTextColor(Qt::black);
+                }
+                transcript->append(line);
+            }
+            transcript->show();
+            file.close();
+        }
+    }
+ }

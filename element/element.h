@@ -51,7 +51,7 @@ struct ISource
     double pulse_width = 0;
     double period = 0;  // for sin : 1/frequency
     double dumping_factor = 0;//for sin
-    ISource(QString Name, char type) : Name(Name), type(type){};
+    ISource(char type) : type(type){};
     ISource(){};
     bool operator==(const ISource b)const
 	{
@@ -79,6 +79,7 @@ struct VSource  //vDC,vAC,vPulse
     double period = 0;  // for sin : 1/frequency
     double dumping_factor = 0;//for sin
 
+    VSource(char type) : type(type){};
     VSource(QString Name, char type) : Name(Name), type(type){};
     VSource(){};
     bool operator==(const VSource b)const
