@@ -606,7 +606,7 @@ cx_mat circuit::GenerateAcStamp(double f)
         switch (element.type)
         {
         case 'G':
-        {
+        {//VCCS
             real(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[2]]) += element.value;
             real(MatrixOrder[element.Nodes[0]], MatrixOrder[element.Nodes[3]]) += -element.value;
             real(MatrixOrder[element.Nodes[1]], MatrixOrder[element.Nodes[2]]) += -element.value;
@@ -830,8 +830,15 @@ void circuit::setReferenceNode()
         ReferenceNode = "gnd";
     else if(NodesName.contains("0"))
         ReferenceNode = "0";
-    else 
-        return;
+    else {
+        if(!VSourceList.empty()){
+        ReferenceNode = VSourceList[0].Nodes[1];
+        }
+        if(!ISourceList.empty()){
+        ReferenceNode = ISourceList[0].Nodes[1];
+        }
+    }
+    return;
 }
 
 mat circuit::SetInitialState()
