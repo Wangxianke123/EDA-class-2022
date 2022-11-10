@@ -195,10 +195,11 @@ void MainWindow::slotParser()
     if(MainCircuit!=nullptr)
         delete MainCircuit;
     MainCircuit = parse(netList);
-    MainCircuit->ui = this;
-    MainCircuit->printSourceInfo();
-    if(MainCircuit!=nullptr)
+    if(MainCircuit!=nullptr){
         stampAction->setDisabled(false);
+         MainCircuit->ui = this;
+        MainCircuit->printSourceInfo();
+    }
     else{
         stampAction->setDisabled(true);
         plotAction->setDisabled(true);
@@ -357,11 +358,14 @@ void MainWindow::slotPlot()
     switch (MainCircuit->PlotInFo->type)
     {
     case 'd':{
+        qDebug()<<"plot dc result";
         QVector<double> x,y;
         double start,stop,step;
         start = MainCircuit->DC_result->start;
         stop = MainCircuit->DC_result->stop;
         step = MainCircuit->DC_result->step;
+        qDebug()<<"start:"<<start;
+        
         int n = MainCircuit->DC_result->answer_table.size();
         int pos = MainCircuit->MatrixOrder[MainCircuit->PlotInFo->VariableName[0]];
         qDebug()<<"pos:"<<pos;
@@ -421,7 +425,7 @@ void MainWindow::slotPlot()
     }
     case 't':{
         QCustomPlot *customPlot = new QCustomPlot();
-        QVector<QColor> Colorlist = {Qt::red,Qt::blue,Qt::green,Qt::black};
+        QVector<QColor> Colorlist = {Qt::blue,Qt::red,Qt::green,Qt::black};
         QVector<double> x;
         int n = MainCircuit->Tran_result->TimeList.size();
         for (int i = 0; i < n; i++)

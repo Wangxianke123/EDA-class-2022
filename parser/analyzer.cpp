@@ -724,7 +724,6 @@ struct VSource* ParseVSource(QString str)
     QRegExp Source3("^[Vv]\\w*\\s+\\w+\\s+\\w+\\s+[Aa]?[Cc]?\\s*\\d+(.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?\\s*$");
     QRegExp Source4("^[Vv]\\w*\\s+\\w+\\s+\\w+\\s+\\s*\\d+(.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?(\\d*\\s*)?((tran)|(TRAN))?\\s*(const\\(\\w+\\))?\\s*$");
     QRegExp Source5("^[Vv]\\w*\\s+\\w+\\s+\\w+\\s+((tran)|(TRAN))?\\s*(sin)?\\s*\\((\\d+(\\.|(e-))?\\d*((MEG)|(Meg)|[FfTtpPnNuUkKMm])?\\s*)+\\)\\s*$");
-
     if(Source1.exactMatch(str)||Source4.exactMatch(str)){
         return ParseVSource_DC(str);
     }
@@ -1299,7 +1298,7 @@ struct PlotInFo* ParsePlotInFo(QString str){
 	{
         pos_DC += DC.matchedLength();
         struct PlotInFo *plotinfo = new (struct PlotInFo);
-        plotinfo->type = 'a';
+        plotinfo->type = 'd';
         while ((pos_DC = Name.indexIn(str, pos_DC)) != -1)
         {
             QString temp = Name.cap(1).simplified();

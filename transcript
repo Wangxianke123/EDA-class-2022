@@ -1,42 +1,52 @@
-Date:	2022-11-10	Time:	16:45:39	
+Date:	2022-11-10	Time:	21:35:50	
 #Start parsing netlist ...
 #grep an annotation:
-* TestBench 3 for Homework 6, 2022 EDA course. 
+* TestBench 1 for Homework 5, 2022 EDA course.
 #grep an annotation:
-* Author    : Hao Limin.
+* Author    : Hao Limin
 #grep an annotation:
-* Date      : 2022/11/03.
-#grep a command:
-.model diode diode1
-#grep a source:
-V1 1 0 TRAN sin (0 1 1 0 0)
+* Date      : 2022/10/25
+#grep an annotation:
+* Info      : RES lade.
 #grep a resistor:
-R1 1 2 2m
-#grep a diode:
-D1 2 0 diode
+R03 0 3 3k
+#grep a resistor:
+R23 2 3 1k
+#grep a resistor:
+R02 0 2 2k
+#grep a resistor:
+R12 1 2 1k
+#grep a resistor:
+R01 0 1 2k
+#grep a source:
+Vin 3 0 DC 5
 #grep a command:
-.tran 0.01 2 0
+.DC Vin 5 15 0.5
 #grep a command:
-.plot tran v(2) v(1)
+.plot DC v(1)
 #grep a command:
 .end
 Here's the result of parser:
 ___________________________________________________
 Title:
-TA-session-6-ckt-3
-Nodes:3
-Devices:2
-Resistor:1	Capacitor:0	Inductance:0
+TA-session-5-ckt-1
+Nodes:4
+Devices:6
+Resistor:5	Capacitor:0	Inductance:0
 Vsrc:1
 Isrc:0
 Dependent:0
-Diode:1
-Name:R1		Value:0.002		Node1:1		Node2:2
-Name:V1		Value:0		Node1:1		Node2:0
-Name:D1		Node1:2		Node2:0
+Diode:0
+Name:R03		Value:3000		Node1:0		Node2:3
+Name:R23		Value:1000		Node1:2		Node2:3
+Name:R02		Value:2000		Node1:0		Node2:2
+Name:R12		Value:1000		Node1:1		Node2:2
+Name:R01		Value:2000		Node1:0		Node2:1
+Name:Vin		Value:5		Node1:3		Node2:0
 ___________________________________________________
-name:	0	 row/col number in matrix:	2
-name:	1	 row/col number in matrix:	1
-name:	2	 row/col number in matrix:	3
-name:	I_V1	 row/col number in matrix:	0
+name:	0	 row/col number in matrix:	0
+name:	1	 row/col number in matrix:	3
+name:	2	 row/col number in matrix:	2
+name:	3	 row/col number in matrix:	1
+name:	I_Vin	 row/col number in matrix:	4
 ___________________________________________________
